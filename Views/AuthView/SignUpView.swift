@@ -9,6 +9,7 @@ import SwiftUI
 import AuthenticationServices
 
 struct SignUpView: View {
+    
     @StateObject private var signUpViewModel = SignUpViewModel()
     @State private var navigateToLogin = false
     @State private var showToast = false
@@ -51,28 +52,7 @@ struct SignUpView: View {
                 }
         
                 Spacer()
-                
-                HStack{
-                    VStack{Divider()}
-                    Text("Or")
-                    VStack{Divider()}
-                }.padding(.bottom, 20)
-                
-                
-                AuthButton(label:"Countinue with Google", width: 0.8, icon: "g.circle.fill"){
-                    
-                }
-                
-//                SignInWithAppleButton(.signIn){
-//                    result in
-//                }onCompletion: { result in
-//                    
-//                }
-//                .frame(width: UIScreen.main.bounds.width * 0.96)
-//                .frame(height: UIScreen.main.bounds.height * 0.05)
-//                .signInWithAppleButtonStyle(.whiteOutline)
-                
-                Spacer()
+
             }.padding()
              .navigationDestination(isPresented: $navigateToLogin) {
                     SignInView()

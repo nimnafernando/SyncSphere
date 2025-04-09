@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 import AuthenticationServices
 
 struct SignInView: View {
     @StateObject private var signInViewModel = SignInViewModel()
+    @EnvironmentObject var mainViewModel: MainViewModel
     @State private var navigateToDashboard = false
     @State private var showToast = false
     @State private var toastMessage = ""
@@ -48,7 +50,8 @@ struct SignInView: View {
                     
                     AuthButton(label:"Sign in", width: 0.9) {
                         signInViewModel.signIn { success in
-                            if success {
+                            if success, let userId = Auth.auth().currentUser?.uid {
+                            
                                 toastMessage = "Sign in successful!"
                                 toastType = .success
                                 showToast = true
@@ -77,6 +80,7 @@ struct SignInView: View {
                 
                
             }
+            .navigationBarBackButtonHidden(true)
             .navigationDestination(isPresented: $navigateToDashboard) {
                 DashboardView()
             }

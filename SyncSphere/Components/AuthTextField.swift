@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct AuthTextField: View {
+    
     var iconName: String
        var placeholder: String
        @Binding var text: String
