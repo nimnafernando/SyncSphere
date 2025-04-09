@@ -2,6 +2,18 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Amulya-Bold.ttf</string>
+		<string>Amulya-BoldItalic.ttf</string>
+		<string>Amulya-Italic.ttf</string>
+		<string>Amulya-Light.ttf</string>
+		<string>Amulya-Medium.ttf</string>
+		<string>Amulya-MediumItalic.ttf</string>
+		<string>Amulya-Regular.ttf</string>
+		<string>Amulya-Variable.ttf</string>
+		<string>Amulya-VariableItalic.ttf</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

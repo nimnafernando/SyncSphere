@@ -11,20 +11,28 @@ import FirebaseCore
 
 struct ContentView: View {
     
-    @State private var mainVIewModel = MainViewModel()
+    @State private var mainViewModel = MainViewModel()
+    @State private var isLoading = true
     
     var body: some View {
-        
-        if mainVIewModel.isSignin, !mainVIewModel.userId.isEmpty {
-            DashboardView()
-        } else {
-            SignInView()
-        }
-    }
-    
-}
-
-// apple call back https://syncsphere-app.firebaseapp.com/__/auth/handler
+           ZStack {
+               if isLoading {
+                   ProgressView()
+               } else if mainViewModel.isSignin, !mainViewModel.userId.isEmpty {
+                   DashboardView()
+                       .environmentObject(mainViewModel.profileViewModel) 
+               } else {
+                   SignInView()
+               }
+           }
+           .onAppear {
+              
+               DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                   isLoading = false
+               }
+           }
+       }
+   }
 
 #Preview {
     ContentView()
