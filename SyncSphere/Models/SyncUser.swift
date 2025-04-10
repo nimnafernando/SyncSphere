@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct SyncUser : Codable{
+struct SyncUser : Codable, Identifiable{
     
     let id: String
     let username: String

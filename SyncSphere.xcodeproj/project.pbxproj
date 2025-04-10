@@ -131,6 +131,7 @@
 				5A6D70622DA38F0200E590FC /* Views */,
 				1A9474162D97B76E00FCF756 /* SyncSphereTests */,
 				1A9474202D97B76E00FCF756 /* SyncSphereUITests */,
+				5A625B762DA7E57E00993E98 /* Frameworks */,
 				1A9473FD2D97B76D00FCF756 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -143,6 +144,13 @@
 				1A94741D2D97B76E00FCF756 /* SyncSphereUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		5A625B762DA7E57E00993E98 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
