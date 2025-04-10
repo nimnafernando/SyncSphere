@@ -12,7 +12,7 @@ struct CustomProgressBar: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text("65% progress")
+            Text("6/10 Task Completed")
                 .padding(.leading, 20)
 
             ZStack(alignment: .leading) {
@@ -28,9 +28,9 @@ struct CustomProgressBar: View {
                     )
                     .background(
                         RoundedRectangle(cornerRadius: 30)
-                            .fill(Color.white)
+                            .fill(Color.OffWhite)
                     )
-                    .frame(height: 40)
+                    .frame(height: 32)
 
                 // Filled gradient progress bar
                 RoundedRectangle(cornerRadius: 30)
@@ -41,7 +41,7 @@ struct CustomProgressBar: View {
                             endPoint: .trailing
                         )
                     )
-                    .frame(width: progressBarWidth(proxyWidth: UIScreen.main.bounds.width - 46), height: 30)
+                    .frame(width: progressBarWidth(proxyWidth: UIScreen.main.bounds.width - 46), height: 22)
                     .padding(.leading, 5)
                     .padding(.vertical, 5)
             }

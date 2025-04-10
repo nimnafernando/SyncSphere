@@ -23,7 +23,7 @@ struct TaskCard: View {
                 HStack {
                     Image(systemName: icon)
                         .font(.system(size: 22))
-                        .foregroundColor(.black)
+                        .foregroundColor(iconColor)
                         .padding(12)
                         .background(
                             Circle()
@@ -34,7 +34,6 @@ struct TaskCard: View {
                     VStack(alignment: .leading) {
                         Text(title)
                             .font(.title3)
-                            .bold()
                         Text(subtitle)
                             .foregroundColor(.gray)
                             .font(.caption)
@@ -48,7 +47,7 @@ struct TaskCard: View {
                         .foregroundColor(iconColor)
                         .padding(.trailing, 20)
                 }
-            ).padding(.bottom, 20)
+            )
     }
 }
 
