@@ -43,7 +43,7 @@ struct SideBarView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     
-                    NavigationLink(destination: AllTaskCategoryView()) {
+                    NavigationLink(destination: TaskCategoryView()) {
 
                         HStack {
                             Image(systemName: "list.bullet")

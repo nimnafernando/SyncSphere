@@ -131,33 +131,41 @@ struct DashboardView: View {
                             Text("Event Categories")
                                 .font(.title3)
                             
-                            TaskCard(
-                                icon: "wrench.adjustable",
-                                iconColor: .Lavendar,
-                                title: "In Progress",
-                                subtitle: "Finished Events",
-                                count: "\(inProgressCount)"
-                            )
-                            TaskCard(
-                                icon: "calendar",
-                                iconColor: .CustomPink,
-                                title: "Up Coming",
-                                subtitle: "Finished Events",
-                                count: "\(upcomingCount)"
-                            )
-                            TaskCard(
-                                icon: "checkmark.rectangle.stack",
-                                iconColor: .green,
-                                title: "Completed",
-                                subtitle: "Finished Events",
-                                count: "\(completedCount)"
-                            )
+                            NavigationLink(destination: AllEventsView(initialTab: .inprogress)) {
+                                                           TaskCard(
+                                                               icon: "wrench.adjustable",
+                                                               iconColor: .Lavendar,
+                                                               title: "In Progress",
+                                                               subtitle: "Finished Events",
+                                                               count: "\(inProgressCount)"
+                                                           )
+                                                       }
+
+                                                       NavigationLink(destination: AllEventsView(initialTab: .upcoming)) {
+                                                           TaskCard(
+                                                               icon: "calendar",
+                                                               iconColor: .CustomPink,
+                                                               title: "Up Coming",
+                                                               subtitle: "Finished Events",
+                                                               count: "\(upcomingCount)"
+                                                           )
+                                                       }
+
+                                                       NavigationLink(destination: AllEventsView(initialTab: .completed)) {
+                                                           TaskCard(
+                                                               icon: "checkmark.rectangle.stack",
+                                                               iconColor: .green,
+                                                               title: "Completed",
+                                                               subtitle: "Finished Events",
+                                                               count: "\(completedCount)"
+                                                           )
+                                                       }
                         }
                         Spacer()
                         
                         HStack{
                             Spacer()
-                            NavigationLink(destination: AllEventsView()) {
+                            NavigationLink(destination: NewEventView()) {
                                 Image(systemName: "plus")
                                     .font(.system(size: 28))
                                     .foregroundColor(Color.white)
@@ -235,7 +243,7 @@ struct DashboardView: View {
         isLoading = true
         hasError = false
         
-        guard let userId = profileViewModel.user?.id else {
+        guard (profileViewModel.user?.id) != nil else {
             isLoading = false
             hasError = true
             toastMessage = "User information not available"
