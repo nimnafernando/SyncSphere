@@ -27,18 +27,6 @@ struct SideBarView: View {
                                 .bold()
                         }
                         
-                        Spacer()
-                        
-                        Button(action: {
-                            withAnimation(.spring()) {
-                                isVisible = false
-                            }
-                        }) {
-                            Image(systemName: "x.circle")
-                                .font(.title3)
-                                .foregroundColor(.black)
-                                .padding(.top, -20)
-                        }
                     }
                     .padding(.horizontal)
                     .padding(.top, 80)
@@ -56,6 +44,7 @@ struct SideBarView: View {
                     }
                     
                     NavigationLink(destination: AllTaskCategoryView()) {
+
                         HStack {
                             Image(systemName: "list.bullet")
                             Text("Task Category")

@@ -14,7 +14,6 @@ struct AllEventsView: View {
         case upcoming = "Upcoming"
         case completed = "Completed"
         case cancelled = "Cancelled"
-           
         }
     
     @EnvironmentObject private var profileViewModel: ProfileViewModel
@@ -27,7 +26,6 @@ struct AllEventsView: View {
     private var userId: String? {
         profileViewModel.user?.id
     }
-
             var body: some View {
                 VStack {
                     // Top Tab Picker
@@ -38,8 +36,6 @@ struct AllEventsView: View {
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .padding()
-
-                    Divider()
 
                     // Event List Content
                     if isLoading {
@@ -63,6 +59,7 @@ struct AllEventsView: View {
                         }
                     }
                 }
+                .frame(maxHeight: .infinity, alignment: .top)
                 .navigationTitle("Events")
                 .onAppear(perform: loadEvents)
                 .refreshable {
@@ -71,18 +68,17 @@ struct AllEventsView: View {
             }
     
     private func eventsForSelectedTab() -> [SyncEvent] {
-         switch selectedTab {
-         case .completed:
-             return events
-         case .upcoming:
-             return events
-         case .cancelled:
-             return events
-         case .inprogress:
-             return events
-             
-         }
-     }
+        switch selectedTab {
+        case .completed:
+            return events.filter { $0.statusId == 1 }
+        case .upcoming:
+            return events.filter { $0.statusId == 2 }
+        case .cancelled:
+            return events.filter { $0.statusId == 3 }
+        case .inprogress:
+            return events.filter { $0.statusId == 4 }
+        }
+    }
     
     private func loadEvents() {
         isLoading = true

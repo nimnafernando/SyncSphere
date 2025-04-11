@@ -12,7 +12,7 @@ struct TaskCard: View {
     let iconColor: Color
     let title: String
     let subtitle: String
-    let count: Int
+    let count: String
     
     var body: some View {
         Rectangle()
@@ -52,5 +52,5 @@ struct TaskCard: View {
 }
 
 #Preview {
-    TaskCard(icon: "house", iconColor: Color.blue, title: "Title", subtitle: "This is title", count: 12)
+    TaskCard(icon: "house", iconColor: Color.blue, title: "Title", subtitle: "This is title", count: "12")
 }

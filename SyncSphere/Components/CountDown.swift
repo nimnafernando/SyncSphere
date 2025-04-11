@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct CountDown: View {
-    let dueDate = Calendar.current.date(byAdding: .day, value: 3, to: Date()) ?? Date()
-//    let dueDate: Date = profileViewModel.profile?.dueDate ?? Date()
+    let dueDate : Date
 
         @State private var timeRemaining: DateComponents = DateComponents()
         private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -39,15 +38,20 @@ struct CountDown: View {
             }
         }
 
-        private func updateCountdown() {
-            let now = Date()
-            let diff = Calendar.current.dateComponents([.day, .hour, .minute], from: now, to: dueDate)
-            timeRemaining = diff
+    private func updateCountdown() {
+            if dueDate == Date(timeIntervalSince1970: 0) {
+                // If the dueDate is 0
+                timeRemaining = DateComponents()
+            } else {
+                let now = Date()
+                let diff = Calendar.current.dateComponents([.day, .hour, .minute], from: now, to: dueDate)
+                timeRemaining = diff
+            }
         }
 
         private func timeBox(title: String, value: Int) -> some View {
             VStack {
-                Text("\(value)")
+                Text(String(format: "%02d", value)) 
                     .font(.system(size: 46, weight: .bold))
                     .frame(minWidth: UIScreen.main.bounds.width * 0.21)
                     .padding(.vertical, 20)
@@ -66,5 +70,5 @@ struct CountDown: View {
     }
 
 #Preview {
-    CountDown()
+    CountDown(dueDate: Date())
 }
