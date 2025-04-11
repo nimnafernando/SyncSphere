@@ -222,6 +222,7 @@ struct DashboardView: View {
                 await loadAllData()
             }
 
+
             .frame(maxWidth: .infinity)
             .navigationDestination(isPresented: $navigateToSignIn) {
                 SignInView()
@@ -356,6 +357,7 @@ struct DashboardView: View {
             }
         }
     }
+
 }
 
 #Preview {

@@ -40,6 +40,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1A5962402DA855F70064817D /* Exceptions for "SyncSphere" folder in "SyncSphereTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ViewModels/TaskViewModel.swift,
+			);
+			target = 1A9474122D97B76E00FCF756 /* SyncSphereTests */;
+		};
 		5A6D708B2DA38F1000E590FC /* Exceptions for "SyncSphere" folder in "SyncSphere" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -80,6 +87,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				5A6D708B2DA38F1000E590FC /* Exceptions for "SyncSphere" folder in "SyncSphere" target */,
+				1A5962402DA855F70064817D /* Exceptions for "SyncSphere" folder in "SyncSphereTests" target */,
 				5A9BE8CA2DA664EF003A6CC9 /* Exceptions for "SyncSphere" folder in "SyncSphereUITests" target */,
 			);
 			path = SyncSphere;
