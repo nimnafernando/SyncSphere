@@ -2,7 +2,7 @@
 //  EventDetailView.swift
 //  SyncSphere
 //
-//  Created by Rashmi Liyanawadu on 2025-04-12.
+//  Created by Rashmi Liyanawadu on 2025-04-11.
 //
 
 import SwiftUI
@@ -15,7 +15,7 @@ struct EventDetailView: View {
     @State private var alertMessage = ""
     @State private var calendarEventId: String?
     private let eventKitManager = EventKitManager()
-
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -25,16 +25,16 @@ struct EventDetailView: View {
                         Text(event.eventName)
                             .font(.title)
                             .fontWeight(.bold)
-
+                        
                         Text(event.dueDate.description)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
-
+                 
                 }
                 .padding(.bottom, 5)
-
-
+           
+        
                 // Calendar Button
                 Button(action: {
                     addToCalendar()
@@ -73,8 +73,8 @@ struct EventDetailView: View {
             calendarEventId = event.calendarEventId
         }
     }
-
-
+    
+    
     private func addToCalendar() {
         // If already added, remove it
         if let existingId = calendarEventId {
@@ -93,14 +93,14 @@ struct EventDetailView: View {
             }
             return
         }
-
+        
         // Otherwise add it
         isAddingToCalendar = true
-
+        
         eventKitManager.addEventToCalendar(syncEvent: event) { result in
             DispatchQueue.main.async {
                 isAddingToCalendar = false
-
+                
                 switch result {
                 case .success(let eventId):
                     calendarEventId = eventId
@@ -108,7 +108,7 @@ struct EventDetailView: View {
                 case .failure(let error):
                     alertMessage = "Failed to add: \(error.localizedDescription)"
                 }
-
+                
                 showAlert = true
             }
         }

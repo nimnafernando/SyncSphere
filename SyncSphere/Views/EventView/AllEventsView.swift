@@ -27,13 +27,12 @@ struct AllEventsView: View {
     }
     
     var initialTab: Tab = .inprogress
-            @State private var selectedTab: Tab
+        @State private var selectedTab: Tab
 
-            init(initialTab: Tab = .inprogress) {
-                self.initialTab = initialTab
-                _selectedTab = State(initialValue: initialTab)
-            }
-    
+        init(initialTab: Tab = .inprogress) {
+            self.initialTab = initialTab
+            _selectedTab = State(initialValue: initialTab)
+        }
             var body: some View {
                 VStack {
                     // Top Tab Picker
@@ -82,7 +81,7 @@ struct AllEventsView: View {
         case .upcoming:
             return events.filter { $0.statusId == 1 }
         case .cancelled:
-            return events.filter { $0.statusId == 3 }
+            return events.filter { $0.statusId == 2 }
         case .inprogress:
             return events.filter { $0.statusId == 0 }
         }

@@ -21,8 +21,8 @@ struct SyncEvent: Codable, Identifiable {
     var calendarEventId: String? 
     // For Identifiable conformance
     var id: String {
-        return eventId ?? UUID().uuidString
-    }
+            return eventId ?? UUID().uuidString
+        }
     
     // Custom initializer for manual creation
     init(eventId: String?, eventName: String, dueDate: TimeInterval, venue: String?, priority: Int?, isOutdoor: Bool, statusId: Int?, createdAt: TimeInterval?) {

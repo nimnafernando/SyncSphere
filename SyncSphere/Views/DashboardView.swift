@@ -132,34 +132,34 @@ struct DashboardView: View {
                                 .font(.title3)
                             
                             NavigationLink(destination: AllEventsView(initialTab: .inprogress)) {
-                                                           TaskCard(
-                                                               icon: "wrench.adjustable",
-                                                               iconColor: .Lavendar,
-                                                               title: "In Progress",
-                                                               subtitle: "Finished Events",
-                                                               count: "\(inProgressCount)"
-                                                           )
-                                                       }
-
-                                                       NavigationLink(destination: AllEventsView(initialTab: .upcoming)) {
-                                                           TaskCard(
-                                                               icon: "calendar",
-                                                               iconColor: .CustomPink,
-                                                               title: "Up Coming",
-                                                               subtitle: "Finished Events",
-                                                               count: "\(upcomingCount)"
-                                                           )
-                                                       }
-
-                                                       NavigationLink(destination: AllEventsView(initialTab: .completed)) {
-                                                           TaskCard(
-                                                               icon: "checkmark.rectangle.stack",
-                                                               iconColor: .green,
-                                                               title: "Completed",
-                                                               subtitle: "Finished Events",
-                                                               count: "\(completedCount)"
-                                                           )
-                                                       }
+                                TaskCard(
+                                    icon: "wrench.adjustable",
+                                    iconColor: .Lavendar,
+                                    title: "In Progress",
+                                    subtitle: "Finished Events",
+                                    count: "\(inProgressCount)"
+                                )
+                            }
+                            
+                            NavigationLink(destination: AllEventsView(initialTab: .upcoming)) {
+                                TaskCard(
+                                    icon: "calendar",
+                                    iconColor: .CustomPink,
+                                    title: "Up Coming",
+                                    subtitle: "Finished Events",
+                                    count: "\(upcomingCount)"
+                                )
+                            }
+                            
+                            NavigationLink(destination: AllEventsView(initialTab: .completed)) {
+                                TaskCard(
+                                    icon: "checkmark.rectangle.stack",
+                                    iconColor: .green,
+                                    title: "Completed",
+                                    subtitle: "Finished Events",
+                                    count: "\(completedCount)"
+                                )
+                            }
                         }
                         Spacer()
                         
@@ -229,7 +229,6 @@ struct DashboardView: View {
             .task {
                 await loadAllData()
             }
-
 
             .frame(maxWidth: .infinity)
             .navigationDestination(isPresented: $navigateToSignIn) {
@@ -365,7 +364,6 @@ struct DashboardView: View {
             }
         }
     }
-
 }
 
 #Preview {
