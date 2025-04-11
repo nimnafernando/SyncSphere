@@ -76,11 +76,6 @@
 			path = SyncSphereUITests;
 			sourceTree = "<group>";
 		};
-		5A6D70622DA38F0200E590FC /* Views */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Views;
-			sourceTree = "<group>";
-		};
 		5A6D70832DA38F0F00E590FC /* SyncSphere */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -128,7 +123,6 @@
 			isa = PBXGroup;
 			children = (
 				5A6D70832DA38F0F00E590FC /* SyncSphere */,
-				5A6D70622DA38F0200E590FC /* Views */,
 				1A9474162D97B76E00FCF756 /* SyncSphereTests */,
 				1A9474202D97B76E00FCF756 /* SyncSphereUITests */,
 				5A625B762DA7E57E00993E98 /* Frameworks */,
@@ -169,7 +163,6 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				5A6D70622DA38F0200E590FC /* Views */,
 				5A6D70832DA38F0F00E590FC /* SyncSphere */,
 			);
 			name = SyncSphere;

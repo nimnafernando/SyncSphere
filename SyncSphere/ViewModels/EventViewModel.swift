@@ -14,132 +14,71 @@ class EventViewModel: ObservableObject {
     
     private let db = Firestore.firestore()
     @Published var eventsByStatus: [Int: [SyncEvent]] = [:]
+    @Published var eventCountsByStatus: [Int: Int] = [:]
     
     func getEventsForUser(userId: String, completion: @escaping (Result<[SyncEvent], Error>) -> Void) {
         print("Starting to fetch events for userId: \(userId)")
         
-        // Create a reference to the user document
         let userRef = db.collection("user").document(userId)
-        print("Created user reference: \(userRef)")
+        let userEventsRef = db.collection("userEvents")
         
-        // Query using the reference instead of a string
-        db.collection("userEvents")
+        userEventsRef
             .whereField("userId", isEqualTo: userRef)
             .getDocuments { snapshot, error in
+                
                 if let error = error {
                     print("Error fetching userEvents: \(error)")
                     completion(.failure(error))
                     return
                 }
                 
-                guard let documents = snapshot?.documents else {
-                    print("No documents found in userEvents collection")
+                guard let documents = snapshot?.documents, !documents.isEmpty else {
+                    print("No documents found in userEvents collection for user \(userId)")
                     completion(.success([]))
                     return
                 }
                 
-                print("Found \(documents.count) userEvent documents")
-                
-                if documents.isEmpty {
-                    completion(.success([]))
-                    return
-                }
-                
-                // Extract event references
-                let eventRefs = documents.compactMap { doc -> DocumentReference? in
-                    guard let eventRef = doc.data()["eventId"] as? DocumentReference else {
-                        print("Could not find eventId reference in document \(doc.documentID)")
+                let eventRefs: [DocumentReference] = documents.compactMap { doc in
+                    guard let ref = doc.data()["eventId"] as? DocumentReference else {
+                        print("Missing or invalid 'eventId' reference in doc \(doc.documentID)")
                         return nil
                     }
-                    
-                    print("Found event reference: \(eventRef)")
-                    return eventRef
+                    return ref
                 }
                 
-                print("Extracted \(eventRefs.count) event references")
-                
-                if eventRefs.isEmpty {
-                    print("No valid event references found")
+                guard !eventRefs.isEmpty else {
+                    print("No valid event references found.")
                     completion(.success([]))
                     return
                 }
                 
-                // Now fetch all these events
                 let group = DispatchGroup()
                 var events: [SyncEvent] = []
-                var fetchError: Error?
+                var errors: [Error] = []
                 
                 for eventRef in eventRefs {
                     group.enter()
                     
-                    eventRef.getDocument { snapshot, error in
+                    eventRef.getDocument { [self] snapshot, error in
                         defer { group.leave() }
                         
                         if let error = error {
                             print("Error fetching event \(eventRef.documentID): \(error)")
-                            fetchError = error
+                            errors.append(error)
                             return
                         }
                         
-                        if snapshot?.exists == false {
-                            print("Event document \(eventRef.documentID) does not exist")
-                            return
-                        }
-                        
-                        guard let data = snapshot?.data() else {
+                        guard let snapshot = snapshot, snapshot.exists, let data = snapshot.data() else {
                             print("No data found for event \(eventRef.documentID)")
                             return
                         }
                         
-                        print("Retrieved data for event \(eventRef.documentID): \(data)")
-                        
-                        // Create event manually instead of using decoder
                         do {
-                            // Extract status ID
-                            var statusIdValue: Int?
-                            if let statusRef = data["statusId"] as? DocumentReference {
-                                print("Status reference: \(statusRef)")
-                                // Extract statusId from the path or fetch from Firestore if needed
-                                // For now, we'll use the last component of the path
-                                let pathComponents = statusRef.path.components(separatedBy: "/")
-                                if let lastComponent = pathComponents.last, let id = Int(lastComponent) {
-                                    statusIdValue = id
-                                } else {
-                                    // If we can't parse the ID, use the document ID as a fallback
-                                    statusIdValue = Int(statusRef.documentID) ?? 0
-                                }
-                            } else if let statusId = data["statusId"] as? Int {
-                                statusIdValue = statusId
-                            }
+                            let statusId = extractStatusId(from: data["statusId"])
+                            let dueDate = extractTimestamp(from: data["dueDate"]) ?? 0
+                            let createdAt = extractTimestamp(from: data["createdAt"])
+                            let isOutdoor = extractBool(from: data["isOutdoor"]) ?? false
                             
-                            // Extract dates
-                            var dueDate: TimeInterval = 0
-                            if let timestamp = data["dueDate"] as? Timestamp {
-                                dueDate = TimeInterval(timestamp.seconds)
-                            } else if let dateDouble = data["dueDate"] as? Double {
-                                dueDate = dateDouble
-                            } else if let dateInt = data["dueDate"] as? Int {
-                                dueDate = TimeInterval(dateInt)
-                            }
-                            
-                            var createdAt: TimeInterval?
-                            if let timestamp = data["createdAt"] as? Timestamp {
-                                createdAt = TimeInterval(timestamp.seconds)
-                            } else if let dateDouble = data["createdAt"] as? Double {
-                                createdAt = dateDouble
-                            } else if let dateInt = data["createdAt"] as? Int {
-                                createdAt = TimeInterval(dateInt)
-                            }
-                            
-                            // Handle boolean field that might be stored as 0/1
-                            var isOutdoor = false
-                            if let boolValue = data["isOutdoor"] as? Bool {
-                                isOutdoor = boolValue
-                            } else if let intValue = data["isOutdoor"] as? Int {
-                                isOutdoor = intValue != 0
-                            }
-                            
-                            // Create the event
                             let event = SyncEvent(
                                 eventId: eventRef.documentID,
                                 eventName: data["eventName"] as? String ?? "Unknown Event",
@@ -147,50 +86,113 @@ class EventViewModel: ObservableObject {
                                 venue: data["venue"] as? String,
                                 priority: data["priority"] as? Int,
                                 isOutdoor: isOutdoor,
-                                statusId: statusIdValue,
+                                statusId: statusId,
                                 createdAt: createdAt
                             )
                             
-                            print("Successfully created event: \(event.eventName)")
+                            print("Created event: \(event.eventName)")
                             events.append(event)
+                            
                         } catch {
-                            print("Error creating event \(eventRef.documentID): \(error)")
-                            fetchError = error
+                            print("Error parsing event \(eventRef.documentID): \(error)")
+                            errors.append(error)
                         }
                     }
                 }
                 
                 group.notify(queue: .main) {
-                    print("All event fetches completed. Events count: \(events.count)")
-                    if let error = fetchError {
-                        completion(.failure(error))
+                    if !errors.isEmpty {
+                        print("Completed with \(errors.count) error(s)")
                     } else {
-                        completion(.success(events))
+                        print("Successfully fetched \(events.count) event(s)")
                     }
+                    
+                    completion(.success(events))
                 }
             }
     }
 
-    // Helper method to process event data
-    private func processEventData(_ eventId: String, _ data: [String: Any], _ events: inout [SyncEvent], _ fetchError: inout Error?) {
-        print("Retrieved data for event \(eventId): \(data)")
-        
-        do {
-            // Add the eventId to the data dictionary
-            var eventData = data
-            eventData["eventId"] = eventId
-            
-            print("Attempting to decode event data: \(eventData)")
-            
-            // Convert to JSON and decode
-            let jsonData = try JSONSerialization.data(withJSONObject: eventData)
-            let event = try JSONDecoder().decode(SyncEvent.self, from: jsonData)
-            print("Successfully decoded event: \(event.eventName)")
-            events.append(event)
-        } catch {
-            print("Error decoding event \(eventId): \(error)")
-            print("Data: \(data)")
-            fetchError = error
+
+    private func extractStatusId(from value: Any?) -> Int? {
+        if let ref = value as? DocumentReference {
+            let id = Int(ref.documentID) ?? Int(ref.path.components(separatedBy: "/").last ?? "")
+            return id
+        } else if let id = value as? Int {
+            return id
+        }
+        return nil
+    }
+
+    private func extractTimestamp(from value: Any?) -> TimeInterval? {
+        if let timestamp = value as? Timestamp {
+            return TimeInterval(timestamp.seconds)
+        } else if let double = value as? Double {
+            return double
+        } else if let int = value as? Int {
+            return TimeInterval(int)
+        }
+        return nil
+    }
+
+    private func extractBool(from value: Any?) -> Bool? {
+        if let bool = value as? Bool {
+            return bool
+        } else if let int = value as? Int {
+            return int != 0
+        }
+        return nil
+    }
+
+    func getEventsWithStatus(userId: String, statusId: Int, completion: @escaping (Result<[SyncEvent], Error>) -> Void) {
+        getEventsForUser(userId: userId) { result in
+            switch result {
+            case .success(let allEvents):
+                // Filter events by the specified status ID
+                let filteredEvents = allEvents.filter { $0.statusId == statusId }
+                print("Filtered \(allEvents.count) events to \(filteredEvents.count) with status ID \(statusId)")
+                completion(.success(filteredEvents))
+                
+            case .failure(let error):
+                completion(.failure(error))
+            }
         }
     }
+    
+    func getHighestPriorityEvent(userId: String, completion: @escaping (Result<SyncEvent?, Error>) -> Void) {
+        getEventsForUser(userId: userId) { result in
+            switch result {
+            case .success(let events):
+                if events.isEmpty {
+                    // No events found
+                    completion(.success(nil))
+                    return
+                }
+                
+                // Sort events by due date (latest first)
+                let sortedEvents = events.sorted { (event1, event2) -> Bool in
+                    // Compare due dates (latest first)
+                    if event1.dueDate != event2.dueDate {
+                        return event1.dueDate > event2.dueDate
+                    }
+                    
+                    // If due dates are equal, compare creation dates (earliest first)
+                    let created1 = event1.createdAt ?? 0
+                    let created2 = event2.createdAt ?? 0
+                    return created1 < created2
+                }
+                
+                // Get the first event after sorting
+                if let highestPriorityEvent = sortedEvents.first {
+                    print("Highest priority event: \(highestPriorityEvent.eventName), dueDate: \(Date(timeIntervalSince1970: highestPriorityEvent.dueDate))")
+                    completion(.success(highestPriorityEvent))
+                } else {
+                    completion(.success(nil))
+                }
+                
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
 }
