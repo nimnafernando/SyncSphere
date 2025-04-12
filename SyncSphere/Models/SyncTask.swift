@@ -8,7 +8,7 @@
 import Foundation
 import FirebaseFirestore
 
-struct Task: Codable, Identifiable {
+struct SyncTask: Codable, Identifiable {
     
     @DocumentID var id: String?
     let taskName: String
