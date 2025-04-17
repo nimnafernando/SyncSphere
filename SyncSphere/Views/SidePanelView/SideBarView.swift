@@ -27,6 +27,7 @@ struct SideBarView: View {
                                 .bold()
                         }
                         
+                 
                     }
                     .padding(.horizontal)
                     .padding(.top, 80)
@@ -43,8 +44,7 @@ struct SideBarView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     
-                    NavigationLink(destination: AllTaskCategoryView()) {
-
+                    NavigationLink(destination: TaskCategoryView()) {
                         HStack {
                             Image(systemName: "list.bullet")
                             Text("Task Category")

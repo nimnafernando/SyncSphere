@@ -195,4 +195,31 @@ class EventViewModel: ObservableObject {
         }
     }
 
+    func addEventToFirestore(_ event: SyncEvent, completion: @escaping (Result<Void, Error>) -> Void) {
+        let db = Firestore.firestore()
+        
+        do {
+            let documentRef: DocumentReference
+            if let eventId = event.eventId {
+                documentRef = db.collection("event").document(eventId)
+            } else {
+                documentRef = db.collection("event").document()
+            }
+            
+            var newEvent = event
+            newEvent.eventId = documentRef.documentID
+            
+            try documentRef.setData(from: newEvent) { error in
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    print("Event added with ID: \(documentRef.documentID)")
+                    completion(.success(()))
+                }
+            }
+        } catch {
+            completion(.failure(error))
+        }
+    }
+    
 }
