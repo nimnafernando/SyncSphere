@@ -201,9 +201,9 @@ class EventViewModel: ObservableObject {
         do {
             let documentRef: DocumentReference
             if let eventId = event.eventId {
-                documentRef = db.collection("events").document(eventId)
+                documentRef = db.collection("event").document(eventId)
             } else {
-                documentRef = db.collection("events").document()
+                documentRef = db.collection("event").document()
             }
             
             var newEvent = event
