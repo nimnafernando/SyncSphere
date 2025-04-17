@@ -8,8 +8,17 @@
 import SwiftUI
 
 struct TaskDetailView: View {
+    @StateObject var viewModel = TaskCategoryViewModel()
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        
+        List(viewModel.categories) { category in
+            Text(category.name)
+        }.onAppear {
+            viewModel.fetchAllTaskCategories()
+        }
+
+
     }
 }
 
