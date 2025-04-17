@@ -21,11 +21,18 @@ struct AllEventsView: View {
     @State private var events: [SyncEvent] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @State private var selectedTab: Tab = .inprogress
 
     private var userId: String? {
         profileViewModel.user?.id
     }
+    
+    var initialTab: Tab = .inprogress
+        @State private var selectedTab: Tab
+
+        init(initialTab: Tab = .inprogress) {
+            self.initialTab = initialTab
+            _selectedTab = State(initialValue: initialTab)
+        }
             var body: some View {
                 VStack {
                     // Top Tab Picker
@@ -70,13 +77,13 @@ struct AllEventsView: View {
     private func eventsForSelectedTab() -> [SyncEvent] {
         switch selectedTab {
         case .completed:
-            return events.filter { $0.statusId == 1 }
-        case .upcoming:
             return events.filter { $0.statusId == 2 }
+        case .upcoming:
+            return events.filter { $0.statusId == 1 }
         case .cancelled:
-            return events.filter { $0.statusId == 3 }
+            return events.filter { $0.statusId == 2 }
         case .inprogress:
-            return events.filter { $0.statusId == 4 }
+            return events.filter { $0.statusId == 0 }
         }
     }
     
