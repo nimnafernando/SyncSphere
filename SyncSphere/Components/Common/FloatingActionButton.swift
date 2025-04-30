@@ -7,12 +7,34 @@
 
 import SwiftUI
 
-struct FloatingActionButton: View {
+import SwiftUI
+
+struct FloatingActionButton<Destination: View>: View {
+    let destination: Destination
+    let iconName: String
+    let backgroundColor: Color
+
+    init(destination: Destination, iconName: String = "plus", backgroundColor: Color = .Lavendar) {
+        self.destination = destination
+        self.iconName = iconName
+        self.backgroundColor = backgroundColor
+    }
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        HStack {
+            Spacer()
+            NavigationLink(destination: destination) {
+                Image(systemName: iconName)
+                    .font(.system(size: 28))
+                    .foregroundColor(.white)
+                    .padding(20)
+                    .background(
+                        Circle()
+                            .fill(backgroundColor)
+                    )
+                    .padding(.trailing, 20)
+            }
+        }
     }
 }
 
-#Preview {
-    FloatingActionButton()
-}

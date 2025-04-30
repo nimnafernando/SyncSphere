@@ -26,15 +26,14 @@ struct AuthButton: View {
                 }
                 
                 Text(label)
-                    .font(.headline)
-                
-                    .frame(width:  UIScreen.main.bounds.width * (width ?? 0.5), height: UIScreen.main.bounds.width * 0.12)
+                    .foregroundColor(.white)
+                    .bold()
+                    .frame(width:  UIScreen.main.bounds.width * (width ?? 0.9), height: UIScreen.main.bounds.width * 0.14)
                     
             }
-        }.background(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.blue, lineWidth: 0.5)
-        )
+        }
+        .background(Color.Lavendar)
+        .cornerRadius(50)
     }
 }
 

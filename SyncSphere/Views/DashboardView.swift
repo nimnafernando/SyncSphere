@@ -43,44 +43,7 @@ struct DashboardView: View {
                     .zIndex(1)
                 }
                 
-                // Gradient Circle 1
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            gradient: Gradient(colors: [Color.CustomPink.opacity(0.5), Color.clear]),
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 250
-                        )
-                    )
-                    .frame(width: 500, height: 500)
-                    .position(x: 200, y: 250)
-                
-                // Gradient Circle 2
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            gradient: Gradient(colors: [Color.Lavendar.opacity(0.3), Color.clear]),
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 200
-                        )
-                    )
-                    .frame(width: 450, height: 450)
-                    .position(x: 30, y: 560)
-                
-                // Gradient Circle 3
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            gradient: Gradient(colors: [Color.SystemBeige, Color.clear]),
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 250
-                        )
-                    )
-                    .frame(width: 500, height: 530)
-                    .position(x: 320, y: 600)
+                GradientBackground()
                 
                 if isLoading {
                     VStack {
@@ -105,7 +68,7 @@ struct DashboardView: View {
                                             .font(.title3)
                                             .padding(.leading, 16)
                                         
-                                        Text("\(highestPriorityEvent?.eventName ?? "")")
+                                        Text("\(highestPriorityEvent?.eventName ?? "No Events")")
                                             .font(.largeTitle)
                                             .bold()
                                             .padding(.leading, 16)
@@ -163,21 +126,8 @@ struct DashboardView: View {
                         }
                         Spacer()
                         
-                        HStack{
-                            Spacer()
-                            NavigationLink(destination: NewEventView()) {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 28))
-                                    .foregroundColor(Color.white)
-                                    .padding(20)
-                                    .background(
-                                        Circle()
-                                            .fill(Color.Lavendar)
-                                    )
-                                    .padding(.trailing, 20)
-                            }
-                            
-                        }
+                        FloatingActionButton(destination: NewEventView())
+
                     }
                 }
                 // Sidebar button at top-right

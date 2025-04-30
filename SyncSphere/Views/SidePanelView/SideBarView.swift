@@ -21,11 +21,11 @@ struct SideBarView: View {
                         
                         VStack(alignment: .leading) {
                             Text("Welcome,")
-                                .font(.title3)
-                            Text(user.username)
                                 .font(.title2)
-                                .bold()
+                            Text(user.username)
+                                .font(.title)
                         }
+                        .bold()
                         
                  
                     }
@@ -60,7 +60,7 @@ struct SideBarView: View {
                     
                     NavigationLink(destination: HelpView()) {
                         HStack {
-                            Image(systemName: "questionmark")
+                            Image(systemName: "questionmark.circle")
                             Text("Help")
                         }.frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -74,10 +74,10 @@ struct SideBarView: View {
                         }
                     }) {
                         HStack {
-                            Image(systemName: "arrow.forward.circle.fill")
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
                             Text("Sign Out")
                         }
-                        .foregroundColor(.black)
+                        .foregroundColor(.red)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.bottom, 30)
                     }
