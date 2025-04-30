@@ -14,29 +14,56 @@ struct AllEventsView: View {
         case upcoming = "Upcoming"
         case completed = "Completed"
         case cancelled = "Cancelled"
-        }
+    }
     
     @EnvironmentObject private var profileViewModel: ProfileViewModel
     @StateObject private var viewModel = EventViewModel()
     @State private var events: [SyncEvent] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @State private var selectedTab: Tab = .inprogress
-
+    
+    @State private var selectedEvent: SyncEvent? = nil
+    @State private var isShowingEventDetail = false
+    
     private var userId: String? {
         profileViewModel.user?.id
     }
-            var body: some View {
-                VStack {
-                    // Top Tab Picker
-                    Picker("Select a tab", selection: $selectedTab) {
-                        ForEach(Tab.allCases, id: \.self) { tab in
-                            Text(tab.rawValue).tag(tab)
-                        }
+    
+    var initialTab: Tab = .inprogress
+    @State private var selectedTab: Tab
+    
+    init(initialTab: Tab = .inprogress) {
+        self.initialTab = initialTab
+        _selectedTab = State(initialValue: initialTab)
+    }
+    var body: some View {
+        ZStack{
+            GradientBackground()
+            VStack {
+                
+                HStack() {
+                    ForEach(Tab.allCases, id: \.self) { tab in
+                        Text(tab.rawValue).tag(tab)
+                            .font(.subheadline)
+                            .padding(.vertical, 4)
+                            .padding(.horizontal, 8)
+                            .background(selectedTab == tab ? Color("Lavendar") : Color.gray.opacity(0.1))
+                            .foregroundColor(selectedTab == tab ? .white : .gray)
+                            .cornerRadius(16)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(selectedTab == tab ? Color("Lavendar") : Color.gray.opacity(0.3), lineWidth: 1)
+                            )
+                            .onTapGesture {
+                                withAnimation {
+                                    selectedTab = tab
+                                }
+                            }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding()
-
+                }
+                .padding(.top, 8)
+                
+                ScrollView{
                     // Event List Content
                     if isLoading {
                         ProgressView("Loading events...")
@@ -53,30 +80,48 @@ struct AllEventsView: View {
                                 .foregroundColor(.gray)
                                 .frame(maxWidth: .infinity, alignment: .center)
                         } else {
-                            List(filteredEvents) { event in
-                                Text(event.eventName)
+                            ForEach(filteredEvents) { event in
+                                
+                                EventCard(title: event.eventName, date: event.dueDate,
+                                          onComplete: {
+                                    markEventAsCompleted(event)
+                                },
+                                          onDelete: {
+                                    deleteEvent(event)
+                                },
+                                          onTap: {
+                                    selectedEvent = event
+                                    isShowingEventDetail = true
+                                })
+                                
                             }
                         }
                     }
                 }
-                .frame(maxHeight: .infinity, alignment: .top)
-                .navigationTitle("Events")
-                .onAppear(perform: loadEvents)
-                .refreshable {
-                    loadEvents()
-                }
+                
+                Spacer()
+                FloatingActionButton(destination: NewEventView())
+                
             }
+            .frame(maxHeight: .infinity, alignment: .top)
+            .navigationTitle("Events")
+            .onAppear(perform: loadEvents)
+            .refreshable {
+                loadEvents()
+            }
+        }
+    }
     
     private func eventsForSelectedTab() -> [SyncEvent] {
         switch selectedTab {
         case .completed:
-            return events.filter { $0.statusId == 1 }
-        case .upcoming:
             return events.filter { $0.statusId == 2 }
+        case .upcoming:
+            return events.filter { $0.statusId == 1 }
         case .cancelled:
             return events.filter { $0.statusId == 3 }
         case .inprogress:
-            return events.filter { $0.statusId == 4 }
+            return events.filter { $0.statusId == 0 }
         }
     }
     
@@ -106,17 +151,32 @@ struct AllEventsView: View {
             }
         }
     }
+    
+    func markEventAsCompleted(_ event: SyncEvent) {
+        print("event", event)
+    }
+    
+    func deleteEvent(_ event: SyncEvent) {
+        print("event", event)
+    }
+    
+    func navigateToEventDetail(_ event: SyncEvent) {
+        // Implement your navigation logic here
+        // For example:
+        // selectedEvent = event
+        // isShowingDetailView = true
+    }
 }
 
 
 #Preview {
     let mockViewModel = ProfileViewModel()
-        mockViewModel.user = SyncUser(
-            id: "123",
-            username: "Jane Doe",
-            email: "jane@example.com",
-            createdAt: Date().timeIntervalSince1970
-        )
+    mockViewModel.user = SyncUser(
+        id: "123",
+        username: "Jane Doe",
+        email: "jane@example.com",
+        createdAt: Date().timeIntervalSince1970
+    )
     return AllEventsView()
-            .environmentObject(mockViewModel)
+        .environmentObject(mockViewModel)
 }

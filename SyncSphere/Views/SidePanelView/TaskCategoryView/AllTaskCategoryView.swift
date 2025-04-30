@@ -24,7 +24,7 @@ struct AllTaskCategoryView: View {
                     iconColor: Color(hex: categoryColor),
                     title: category.name,
                     subtitle: "",
-                    count: 0
+                    count: "0"
                 )
             }.onAppear {
                 viewModel.fetchAllTaskCategories()
