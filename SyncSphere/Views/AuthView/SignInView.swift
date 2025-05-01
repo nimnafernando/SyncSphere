@@ -37,6 +37,8 @@ struct SignInView: View {
                     .zIndex(1)
                 }
                 
+                GradientBackground()
+                
                 VStack(spacing: 20) {
                     Image("logo")
                         .resizable()
@@ -45,8 +47,10 @@ struct SignInView: View {
                     
                     Spacer()
                     
-                    AuthTextField(iconName: "envelope.circle", placeholder: "Email", text: $signInViewModel.email)
-                    AuthTextField(iconName: "lock.circle", placeholder: "Password", text: $signInViewModel.password, isSecure: true)
+                    AuthTextField(placeholder: "Email", text: $signInViewModel.email)
+                    AuthTextField(placeholder: "Password", text: $signInViewModel.password, isSecure: true)
+                    
+                    Spacer()
                     
                     AuthButton(label:"Sign in", width: 0.9) {
                         signInViewModel.signIn { success in
@@ -68,12 +72,12 @@ struct SignInView: View {
                         }
                     }
                     
-                    Spacer()
-                    
-                    Text("Don't have an account?")
-                    NavigationLink(destination: SignUpView()) {
-                        Text("Sign up")
-                    }
+                    HStack{
+                        Text("New to SyncSphere?")
+                        NavigationLink(destination: SignUpView()) {
+                            Text("Sign up")
+                        }
+                    }.font(.footnote)
                 }
                 .padding(.bottom, 30)
                 .padding()

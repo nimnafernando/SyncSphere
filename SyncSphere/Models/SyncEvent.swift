@@ -16,7 +16,7 @@ struct SyncEvent: Codable, Identifiable {
     let venue: String?
     let priority: Int?
     let isOutdoor: Bool
-    let statusId: Int?
+    var statusId: Int?
     let createdAt: TimeInterval?
     var calendarEventId: String? 
     // For Identifiable conformance

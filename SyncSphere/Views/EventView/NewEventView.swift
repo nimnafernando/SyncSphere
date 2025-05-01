@@ -8,88 +8,216 @@
 import SwiftUI
 
 struct NewEventView: View {
+    
     @StateObject private var viewModel = EventViewModel()
+    @EnvironmentObject private var profileViewModel: ProfileViewModel
     @State private var isAddingToCalendar = false
     @State private var showAlert = false
     @State private var alertMessage = ""
     @State private var calendarEventId: String?
     private let eventKitManager = EventKitManager()
-
+    
     @State private var eventName = ""
     @State private var dueDate = Date()
     @State private var venue = ""
-    @State private var priority = ""
     @State private var isOutdoor = false
-    @State private var statusId = 0
+    @State private var isOngoing: Bool = false
+    @State private var selectedPriority: Int = 4
+    
     @State private var showToast = false
     @State private var toastMessage = ""
     @State private var toastType: ToastType = .success
+    let priorities: [(title: String, value: Int, color: Color)] = [
+        ("High", 1, .red),
+        ("Medium", 2, .blue),
+        ("Low", 3, .green),
+        ("default", 4, .lavendar)
+    ]
     
-    let statusOptions = ["Upcoming", "In Progress", "Completed", "Cancelled"]
+    @Environment(\.dismiss) private var dismiss
+    var existingEvent: SyncEvent? = nil
     
     var body: some View {
-        Form {
-            Section(header: Text("Event Details")) {
-                TextField("Event Name", text: $eventName)
+        
+        NavigationStack{
+            ZStack{
                 
-                TextField("Venue", text: $venue)
+                GradientBackground()
                 
-                TextField("Priority (Number)", text: $priority)
-                    .keyboardType(.numberPad)
-                
-                DatePicker("Due Date", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
-                
-                Toggle("Is Outdoor Event?", isOn: $isOutdoor)
-                
-                Picker("Status", selection: $statusId) {
-                    ForEach(0..<statusOptions.count, id: \.self) { index in
-                        Text(statusOptions[index])
+                VStack() {
+                    Text(existingEvent != nil ? "Edit Event" : "New Event")
+                        .font(.title)
+                        .bold()
+                    
+                    
+                    VStack() {
+                        ClassicText(text: $eventName, placeholder: "Event Name")
+                            .padding(.top, 20)
+                        
+                        DatePicker("Due Date", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
+                            .padding(.horizontal, 20)
+                            .padding(.top, 10)
+                            .padding(.bottom, 20)
+                        
+                    }
+                    .background(Color.OffWhite)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .padding(10)
+                    
+                    
+                    VStack() {
+                        ClassicText(text: $venue, placeholder: "Venue")
+                            .padding(.top, 20)
+                        
+                        HStack {
+                            Toggle("", isOn: $isOutdoor)
+                                .labelsHidden()
+                            Text("Outdoor")
+                                .foregroundColor(.black)
+                                .padding(.leading, 10)
+                            
+                            Spacer()
+                            
+                            NavigationLink(destination: WeatherForcastView()) {
+                                Text("See Details")
+                                    .foregroundColor(Color.blue)
+                                    .font(.footnote)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 10)
+                        .padding(.bottom, 20)
+                    }
+                    .background(Color.OffWhite)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .padding(10)
+                    
+                    
+                    VStack(alignment: .leading) {
+                        Text("Event Priority")
+                            .padding(.leading, 24)
+                            .padding(.top, 20)
+                        HStack() {
+                            ForEach(priorities, id: \.value) { priority in
+                                Button(action: {
+                                    selectedPriority = priority.value
+                                }) {
+                                    Text(priority.title)
+                                        .padding(.vertical, 6)
+                                        .padding(.horizontal, 10)
+                                        .background(
+                                            selectedPriority == priority.value
+                                            ? priority.color
+                                            : Color.white.opacity(0.9)
+                                        )
+                                        .foregroundColor(
+                                            selectedPriority == priority.value
+                                            ? .white
+                                            : priority.color
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 40)
+                                                .stroke(priority.color, lineWidth: 1)
+                                        )
+                                    
+                                        .cornerRadius(40)
+                                    
+                                }
+                            }
+                            .padding(.top, 20)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 20)
+                        
+                        HStack {
+                            Toggle("", isOn: $isOngoing)
+                                .labelsHidden()
+                            Text("Mark as Ongoing")
+                                .foregroundColor(.black)
+                                .padding(.leading, 10)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 10)
+                        .padding(.bottom, 20)
+                        
+                    }
+                    .background(Color.OffWhite)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .padding(10)
+                    
+                    Spacer()
+                    HStack(){
+                        BorderedButton(label: "Clear All", width: 0.4, action: clearAll)
+                            .padding(.leading, 20)
+                        AuthButton(label: existingEvent != nil ? "Update Event" : "Save Event", width: 0.4 ){
+                            saveEvent()
+                        }
+                        
+                        .frame(maxWidth: .infinity, alignment: .center)
                     }
                 }
             }
-            
-            Section {
-                Button("Save Event") {
-                    saveEvent()
-                }
-                .frame(maxWidth: .infinity, alignment: .center)
+            .onAppear {
+                loadEventData()
             }
+            .id(existingEvent?.id)
         }
-        .navigationTitle("New Event")
+    }
+    
+    private func loadEventData() {
+        guard let event = existingEvent else { return }
+        eventName = event.eventName
+        dueDate = Date(timeIntervalSince1970: event.dueDate)
+        venue = event.venue ?? ""
+        isOutdoor = event.isOutdoor
+        isOngoing = event.statusId == 0 ? true : false
+        selectedPriority = event.priority ?? 4
     }
     
     private func saveEvent() {
-        guard let priorityValue = Int(priority) else {
-            print("Invalid priority")
-            return
-        }
+        // Determine if this is a new event or an update
+        let isUpdate = existingEvent != nil
         
-        let newEvent = SyncEvent(
-            eventId: nil,
+        let eventToSave = SyncEvent(
+            eventId: existingEvent?.eventId,
             eventName: eventName,
             dueDate: dueDate.timeIntervalSince1970,
             venue: venue,
-            priority: priorityValue,
+            priority: selectedPriority,
             isOutdoor: isOutdoor,
-            statusId: statusId,
-            createdAt: Date().timeIntervalSince1970
+            statusId: isOngoing == true ? 0 : 1,
+            createdAt: existingEvent?.createdAt ?? Date().timeIntervalSince1970
         )
         
-        viewModel.addEventToFirestore(newEvent) { result in
+        viewModel.addEventToFirestore(eventToSave) { result in
             switch result {
-            case .success():
-                toastMessage = "Event added successfully!"
+            case .success(let eventId):
+                toastMessage = isUpdate ? "Event updated successfully!" : "Event added successfully!"
                 toastType = .success
                 showToast = true
                 
-                addToCalendar(SyncEvent: newEvent)
+                if !isUpdate {
+                    guard let userId = profileViewModel.user?.id else {
+                       print("User ID not available")
+                        return
+                    }
+                    viewModel.addUserEventRecord(userId: userId , eventId: eventId) { userEventResult in
+                        if case .failure(let error) = userEventResult {
+                            print("Failed to create userEvent: \(error.localizedDescription)")
+                        }
+                    }
+                }
+                
+                addToCalendar(SyncEvent: eventToSave)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    dismiss()
+                }
             case .failure(let error):
-                toastMessage = "Failed to add event: \(error.localizedDescription)"
+                toastMessage = isUpdate ? "Failed to update event: \(error.localizedDescription)" : "Failed to add event: \(error.localizedDescription)"
                 toastType = .error
                 showToast = true
             }
         }
-        
     }
     
     private func addToCalendar(SyncEvent: SyncEvent) {
@@ -130,8 +258,19 @@ struct NewEventView: View {
             }
         }
     }
+    
+    private func clearAll() {
+        
+    }
 }
 
-#Preview {
-    NewEventView()
-}
+//#Preview {
+//    let mockViewModel = ProfileViewModel()
+//    mockViewModel.user = SyncUser(
+//        id: "123",
+//        username: "abc def",
+//        email: "abcdef@example.com",
+//        createdAt: Date().timeIntervalSince1970
+//    )
+//    NewEventView(existingEvent: SyncEvent)
+//}
