@@ -22,6 +22,7 @@ struct DashboardView: View {
     @State private var toastType: ToastType = .success
     @State private var isLoading = true
     @State private var hasError = false
+    @State private var viewAppeared = false
     
     var body: some View {
         NavigationStack {

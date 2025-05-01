@@ -10,6 +10,7 @@ import SwiftUI
 struct NewEventView: View {
     
     @StateObject private var viewModel = EventViewModel()
+    @EnvironmentObject private var profileViewModel: ProfileViewModel
     @State private var isAddingToCalendar = false
     @State private var showAlert = false
     @State private var alertMessage = ""
@@ -33,12 +34,9 @@ struct NewEventView: View {
         ("default", 4, .lavendar)
     ]
     
+    @Environment(\.dismiss) private var dismiss
     var existingEvent: SyncEvent? = nil
-       
-    private var isEditing: Bool {
-        existingEvent != nil
-    }
-       
+    
     var body: some View {
         
         NavigationStack{
@@ -47,7 +45,7 @@ struct NewEventView: View {
                 GradientBackground()
                 
                 VStack() {
-                    Text("New Event")
+                    Text(existingEvent != nil ? "Edit Event" : "New Event")
                         .font(.title)
                         .bold()
                     
@@ -151,7 +149,7 @@ struct NewEventView: View {
                     HStack(){
                         BorderedButton(label: "Clear All", width: 0.4, action: clearAll)
                             .padding(.leading, 20)
-                        AuthButton(label: "Save Event", width: 0.4 ){
+                        AuthButton(label: existingEvent != nil ? "Update Event" : "Save Event", width: 0.4 ){
                             saveEvent()
                         }
                         
@@ -159,37 +157,67 @@ struct NewEventView: View {
                     }
                 }
             }
+            .onAppear {
+                loadEventData()
+            }
+            .id(existingEvent?.id)
         }
     }
     
+    private func loadEventData() {
+        guard let event = existingEvent else { return }
+        eventName = event.eventName
+        dueDate = Date(timeIntervalSince1970: event.dueDate)
+        venue = event.venue ?? ""
+        isOutdoor = event.isOutdoor
+        isOngoing = event.statusId == 0 ? true : false
+        selectedPriority = event.priority ?? 4
+    }
+    
     private func saveEvent() {
+        // Determine if this is a new event or an update
+        let isUpdate = existingEvent != nil
         
-        let newEvent = SyncEvent(
-            eventId: nil,
+        let eventToSave = SyncEvent(
+            eventId: existingEvent?.eventId,
             eventName: eventName,
             dueDate: dueDate.timeIntervalSince1970,
             venue: venue,
             priority: selectedPriority,
             isOutdoor: isOutdoor,
             statusId: isOngoing == true ? 0 : 1,
-            createdAt: Date().timeIntervalSince1970
+            createdAt: existingEvent?.createdAt ?? Date().timeIntervalSince1970
         )
         
-        viewModel.addEventToFirestore(newEvent) { result in
+        viewModel.addEventToFirestore(eventToSave) { result in
             switch result {
-            case .success():
-                toastMessage = "Event added successfully!"
+            case .success(let eventId):
+                toastMessage = isUpdate ? "Event updated successfully!" : "Event added successfully!"
                 toastType = .success
                 showToast = true
                 
-                addToCalendar(SyncEvent: newEvent)
+                if !isUpdate {
+                    guard let userId = profileViewModel.user?.id else {
+                       print("User ID not available")
+                        return
+                    }
+                    viewModel.addUserEventRecord(userId: userId , eventId: eventId) { userEventResult in
+                        if case .failure(let error) = userEventResult {
+                            print("Failed to create userEvent: \(error.localizedDescription)")
+                        }
+                    }
+                }
+                
+                addToCalendar(SyncEvent: eventToSave)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    dismiss()
+                }
             case .failure(let error):
-                toastMessage = "Failed to add event: \(error.localizedDescription)"
+                toastMessage = isUpdate ? "Failed to update event: \(error.localizedDescription)" : "Failed to add event: \(error.localizedDescription)"
                 toastType = .error
                 showToast = true
             }
         }
-        
     }
     
     private func addToCalendar(SyncEvent: SyncEvent) {
@@ -236,6 +264,13 @@ struct NewEventView: View {
     }
 }
 
-#Preview {
-    NewEventView()
-}
+//#Preview {
+//    let mockViewModel = ProfileViewModel()
+//    mockViewModel.user = SyncUser(
+//        id: "123",
+//        username: "abc def",
+//        email: "abcdef@example.com",
+//        createdAt: Date().timeIntervalSince1970
+//    )
+//    NewEventView(existingEvent: SyncEvent)
+//}
