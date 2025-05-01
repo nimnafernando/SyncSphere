@@ -1,5 +1,6 @@
 # Ignore Xcode specific files
 .DS_Store
+.plist
 build/
 *.xcworkspace
 *.xcuserstate

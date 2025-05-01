@@ -1,14 +1,13 @@
 //
-//  AuthButton.swift
+//  BorderedButton.swift
 //  SyncSphere
 //
-//  Created by Rashmi Liyanawadu on 2025-04-07.
+//  Created by Rashmi Liyanawadu on 2025-04-20.
 //
 
 import SwiftUI
 
-struct AuthButton: View {
-    
+struct BorderedButton: View {
     var label: String
     var width: CGFloat?
     var icon: String?
@@ -26,17 +25,19 @@ struct AuthButton: View {
                 }
                 
                 Text(label)
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.Lavendar)
                     .bold()
                     .frame(width:  UIScreen.main.bounds.width * (width ?? 0.9), height: UIScreen.main.bounds.width * 0.14)
-                    
+                
             }
         }
-        .background(Color.Lavendar)
-        .cornerRadius(50)
+        .background(
+            RoundedRectangle(cornerRadius: 50)
+                .stroke(Color.Lavendar, lineWidth: 0.5)
+        )
     }
 }
 
 #Preview {
-    AuthButton(label: "label", action: { })
+    BorderedButton(label: "label", action: { })
 }
