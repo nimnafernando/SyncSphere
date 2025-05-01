@@ -21,9 +21,14 @@ struct AllEventsView: View {
     @State private var events: [SyncEvent] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
-    
+    @State private var showPopup = false
     @State private var selectedEvent: SyncEvent? = nil
+    @State private var eventToDelete: SyncEvent? = nil
     @State private var isShowingEventDetail = false
+    
+    @State private var showToast = false
+    @State private var toastMessage = ""
+    @State private var toastType: ToastType = .success
     
     private var userId: String? {
         profileViewModel.user?.id
@@ -82,12 +87,13 @@ struct AllEventsView: View {
                         } else {
                             ForEach(filteredEvents) { event in
                                 
-                                EventCard(title: event.eventName, date: event.dueDate,
+                                EventCard(title: event.eventName, date: event.dueDate, statusId: event.statusId ?? 1,
                                           onComplete: {
                                     markEventAsCompleted(event)
                                 },
                                           onDelete: {
-                                    deleteEvent(event)
+                                    eventToDelete = event
+                                    showPopup = true
                                 },
                                           onTap: {
                                     selectedEvent = event
@@ -96,9 +102,33 @@ struct AllEventsView: View {
                                 
                             }
                         }
+                        NavigationLink(
+                            destination: NewEventView(existingEvent: selectedEvent), // change here
+                            isActive: $isShowingEventDetail,
+                            label: { EmptyView() }
+                        )
                     }
                 }
-                
+                .overlay(
+                    PopupView(
+                        title: "Delete Event",
+                        message: eventToDelete?.statusId ?? 1 != 3 ? "This event will be moved to cancelled. Are you sure you want to remove this event?" : "This will permenantly remove all the event details of the event. Are you sure you want to delete this event?",
+                        isPresented: $showPopup,
+                        confirmButtonTitle: "Delete",
+                        cancelButtonTitle: "Cancel",
+                        onConfirm: {
+                            if let event = eventToDelete {
+                                    deleteEvent(event)
+                                }
+                                eventToDelete = nil
+                                showPopup = false
+                        },
+                                onCancel: {
+                                    eventToDelete = nil
+                                    showPopup = false
+                                }
+                        )
+                    )
                 Spacer()
                 FloatingActionButton(destination: NewEventView())
                 
@@ -130,13 +160,11 @@ struct AllEventsView: View {
         errorMessage = nil
         
         guard let userId = userId, !userId.isEmpty else {
-            print("User ID is nil or empty")
+            print("User ID is empty")
             isLoading = false
-            errorMessage = "No user ID available"
+            errorMessage = "No user available"
             return
         }
-        
-        print("Loading events for user ID: \(userId)")
         
         viewModel.getEventsForUser(userId: userId) { result in
             self.isLoading = false
@@ -153,28 +181,80 @@ struct AllEventsView: View {
     }
     
     func markEventAsCompleted(_ event: SyncEvent) {
-        print("event", event)
+        if (event.statusId == 3){
+            viewModel.updateEventField(eventId: event.eventId!, fields: ["statusId": 1]) { result in
+                switch result {
+                case .success():
+                    showToast = true
+                    toastMessage = "Event restored successfully!"
+                    toastType = .success
+                case .failure(let error):
+                    showToast = true
+                    toastMessage = "Failed to restore the event: \(error.localizedDescription)"
+                    toastType = .error
+                }
+            }
+        } else {
+            viewModel.updateEventField(eventId: event.eventId!, fields: ["statusId": 2]) { result in
+                switch result {
+                case .success():
+                    showToast = true
+                    toastType = .success
+                    toastMessage = "Mark as completed"
+                case .failure(let error):
+                    showToast = true
+                    toastType = .error
+                    toastMessage = "Failed to update the event: \(error.localizedDescription)"
+                }
+            }
+        }
     }
     
     func deleteEvent(_ event: SyncEvent) {
-        print("event", event)
+        if (event.statusId == 3) {
+            viewModel.deleteEvent(eventId: event.id) { result in
+                switch result {
+                case .success():
+                    showToast = true
+                    toastType = .success
+                    toastMessage = "Event deleted successfully"
+                case .failure(let error):
+                    showToast = true
+                    toastType = .error
+                    toastMessage = "Failed to update the event: \(error.localizedDescription)"
+                }
+            }
+        } else {
+            viewModel.updateEventField(eventId: event.eventId!, fields: ["statusId": 3]) { result in
+                switch result {
+                case .success():
+                    showToast = true
+                    toastType = .success
+                    toastMessage = "Event Moved to cancelled"
+                case .failure(let error):
+                    showToast = true
+                    toastType = .success
+                    toastMessage = "Failed to update the event: \(error.localizedDescription)"
+                }
+            }
+        }
     }
     
-    func navigateToEventDetail(_ event: SyncEvent) {
-        // Implement your navigation logic here
-        // For example:
-        // selectedEvent = event
-        // isShowingDetailView = true
-    }
+    private func updateLocalEvent(event: SyncEvent, newStatusId: Int) {
+          if let index = events.firstIndex(where: { $0.id == event.id }) {
+              var updatedEvent = events[index]
+              updatedEvent.statusId = newStatusId
+              events[index] = updatedEvent
+      }
+  }
 }
-
 
 #Preview {
     let mockViewModel = ProfileViewModel()
     mockViewModel.user = SyncUser(
         id: "123",
-        username: "Jane Doe",
-        email: "jane@example.com",
+        username: "abc def",
+        email: "abcdef@example.com",
         createdAt: Date().timeIntervalSince1970
     )
     return AllEventsView()

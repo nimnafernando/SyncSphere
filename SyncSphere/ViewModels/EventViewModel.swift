@@ -93,13 +93,10 @@ class EventViewModel: ObservableObject {
                             print("Created event: \(event.eventName)")
                             events.append(event)
                             
-                        } catch {
-                            print("Error parsing event \(eventRef.documentID): \(error)")
-                            errors.append(error)
                         }
                     }
                 }
-                
+                //                self.updateExpiredEventStatuses(for: userId)
                 group.notify(queue: .main) {
                     if !errors.isEmpty {
                         print("Completed with \(errors.count) error(s)")
@@ -107,12 +104,13 @@ class EventViewModel: ObservableObject {
                         print("Successfully fetched \(events.count) event(s)")
                     }
                     
-                    completion(.success(events))
+                    let sortedEvents = events.sorted { $0.dueDate < $1.dueDate }
+                    completion(.success(sortedEvents))
                 }
             }
     }
-
-
+    
+    
     private func extractStatusId(from value: Any?) -> Int? {
         if let ref = value as? DocumentReference {
             let id = Int(ref.documentID) ?? Int(ref.path.components(separatedBy: "/").last ?? "")
@@ -122,7 +120,7 @@ class EventViewModel: ObservableObject {
         }
         return nil
     }
-
+    
     private func extractTimestamp(from value: Any?) -> TimeInterval? {
         if let timestamp = value as? Timestamp {
             return TimeInterval(timestamp.seconds)
@@ -133,7 +131,7 @@ class EventViewModel: ObservableObject {
         }
         return nil
     }
-
+    
     private func extractBool(from value: Any?) -> Bool? {
         if let bool = value as? Bool {
             return bool
@@ -142,7 +140,7 @@ class EventViewModel: ObservableObject {
         }
         return nil
     }
-
+    
     func getEventsWithStatus(userId: String, statusId: Int, completion: @escaping (Result<[SyncEvent], Error>) -> Void) {
         getEventsForUser(userId: userId) { result in
             switch result {
@@ -162,28 +160,27 @@ class EventViewModel: ObservableObject {
         getEventsForUser(userId: userId) { result in
             switch result {
             case .success(let events):
-                if events.isEmpty {
-                    // No events found
+                let currentTime = Date().timeIntervalSince1970
+                
+                // Filter out events whose due date is in the past
+                let upcomingEvents = events.filter { $0.dueDate > currentTime }
+                
+                if upcomingEvents.isEmpty {
                     completion(.success(nil))
                     return
                 }
                 
-                // Sort events by due date (latest first)
-                let sortedEvents = events.sorted { (event1, event2) -> Bool in
-                    // Compare due dates (latest first)
+                // Sort upcoming events by due date (latest first)
+                let sortedEvents = upcomingEvents.sorted { (event1, event2) -> Bool in
                     if event1.dueDate != event2.dueDate {
                         return event1.dueDate > event2.dueDate
                     }
-                    
-                    // If due dates are equal, compare creation dates (earliest first)
                     let created1 = event1.createdAt ?? 0
                     let created2 = event2.createdAt ?? 0
                     return created1 < created2
                 }
                 
-                // Get the first event after sorting
                 if let highestPriorityEvent = sortedEvents.first {
-                    print("Highest priority event: \(highestPriorityEvent.eventName), dueDate: \(Date(timeIntervalSince1970: highestPriorityEvent.dueDate))")
                     completion(.success(highestPriorityEvent))
                 } else {
                     completion(.success(nil))
@@ -194,31 +191,157 @@ class EventViewModel: ObservableObject {
             }
         }
     }
-
-    func addEventToFirestore(_ event: SyncEvent, completion: @escaping (Result<Void, Error>) -> Void) {
+    
+    func updateExpiredEventStatuses(for userId: String) {
+        getEventsForUser(userId: userId) { result in
+            switch result {
+            case .success(let events):
+                let now = Date().timeIntervalSince1970
+                let db = Firestore.firestore()
+                
+                for event in events {
+                    if event.dueDate < now && event.statusId != 2 {
+                        // Assume 2 = expired status
+                        if let eventId = event.eventId {
+                            db.collection("event").document(eventId).updateData([
+                                "statusId": 2
+                            ]) { error in
+                                if let error = error {
+                                    print("Failed to update event \(eventId): \(error)")
+                                } else {
+                                    print("Updated expired event: \(event.eventName)")
+                                }
+                            }
+                        }
+                    }
+                }
+                
+            case .failure(let error):
+                print("Failed to fetch events: \(error)")
+            }
+        }
+    }
+    
+    func addEventToFirestore(_ event: SyncEvent, completion: @escaping (Result<String, Error>) -> Void) {
         let db = Firestore.firestore()
         
         do {
             let documentRef: DocumentReference
-            if let eventId = event.eventId {
-                documentRef = db.collection("event").document(eventId)
+            let isUpdate = event.eventId != nil && !event.eventId!.isEmpty
+            
+            if isUpdate {
+                documentRef = db.collection("event").document(event.eventId!)
             } else {
                 documentRef = db.collection("event").document()
+                
+                var newEvent = event
+                newEvent.eventId = documentRef.documentID
+                
+                try documentRef.setData(from: newEvent) { error in
+                    if let error = error {
+                        completion(.failure(error))
+                    } else {
+                        print("Event added with ID: \(documentRef.documentID)")
+                        completion(.success(documentRef.documentID))
+                    }
+                }
+                return
             }
             
-            var newEvent = event
-            newEvent.eventId = documentRef.documentID
-            
-            try documentRef.setData(from: newEvent) { error in
+            try documentRef.setData(from: event) { error in
                 if let error = error {
                     completion(.failure(error))
                 } else {
-                    print("Event added with ID: \(documentRef.documentID)")
-                    completion(.success(()))
+                    print(isUpdate ? "Event updated with ID: \(documentRef.documentID)" : "Event added with ID: \(documentRef.documentID)")
+                    completion(.success(documentRef.documentID))
                 }
             }
         } catch {
             completion(.failure(error))
+        }
+    }
+    
+    func addUserEventRecord(userId: String, eventId: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let db = Firestore.firestore()
+        let userEventRef = db.collection("userEvents").document()
+        
+        let userRef = db.document("/user/\(userId)")
+        let eventRef = db.document("/event/\(eventId)")
+        
+        let data: [String: Any] = [
+            "userId": userRef,
+            "eventId": eventRef,  
+            "createdAt": FieldValue.serverTimestamp()
+        ]
+        
+        userEventRef.setData(data) { error in
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                completion(.success(()))
+            }
+        }
+    }
+    
+    func updateEventField(eventId: String, fields: [String: Any], completion: @escaping (Result<Void, Error>) -> Void) {
+        let db = Firestore.firestore()
+        let documentRef = db.collection("event").document(eventId)
+        
+        documentRef.updateData(fields) { error in
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                completion(.success(()))
+            }
+        }
+    }
+    
+    func deleteEvent(eventId: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let db = Firestore.firestore()
+        let eventRef = db.collection("events").document(eventId)
+        let userEventsRef = db.collection("userEvents")
+        
+        eventRef.delete { error in
+            if let error = error {
+                print("Error deleting event: \(error)")
+                completion(.failure(error))
+                return
+            }
+            
+            userEventsRef.whereField("eventId", isEqualTo: eventId).getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching related userEvents: \(error)")
+                    completion(.failure(error))
+                    return
+                }
+                
+                let documents = snapshot?.documents ?? []
+                if documents.isEmpty {
+                    completion(.success(()))
+                    return
+                }
+                
+                var deleteCount = 0
+                var failed = false
+                
+                for doc in documents {
+                    doc.reference.delete { error in
+                        if let error = error {
+                            if !failed {
+                                failed = true
+                                completion(.failure(error))
+                            }
+                            return
+                        }
+                        
+                        deleteCount += 1
+                        if deleteCount == documents.count && !failed {
+                            print("Event and related userEvents deleted successfully.")
+                            completion(.success(()))
+                        }
+                    }
+                }
+            }
         }
     }
     
