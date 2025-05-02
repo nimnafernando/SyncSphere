@@ -10,7 +10,7 @@ import Foundation
 struct SyncUser : Codable, Identifiable{
     
     let id: String
-    let username: String
+    var username: String
     let email: String
     let createdAt: TimeInterval
 }

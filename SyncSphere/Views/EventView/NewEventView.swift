@@ -42,6 +42,22 @@ struct NewEventView: View {
         NavigationStack{
             ZStack{
                 
+                if showToast {
+                    VStack {
+                        ToastView(message: toastMessage, type: toastType)
+                            .padding(.top, 20)
+                            .onAppear {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                    withAnimation {
+                                        showToast = false
+                                    }
+                                }
+                            }
+                        Spacer()
+                    }
+                    .zIndex(1)
+                }
+                
                 GradientBackground()
                 
                 VStack() {
@@ -54,7 +70,7 @@ struct NewEventView: View {
                         ClassicText(text: $eventName, placeholder: "Event Name")
                             .padding(.top, 20)
                         
-                        DatePicker("Due Date", selection: $dueDate, displayedComponents: [.date, .hourAndMinute])
+                        DatePicker("Due Date", selection: $dueDate, in: Date()..., displayedComponents: [.date, .hourAndMinute])
                             .padding(.horizontal, 20)
                             .padding(.top, 10)
                             .padding(.bottom, 20)
@@ -175,6 +191,13 @@ struct NewEventView: View {
     }
     
     private func saveEvent() {
+        guard !eventName.trimmingCharacters(in: .whitespaces).isEmpty else {
+            toastMessage = "Event name is required."
+            toastType = .error
+            showToast = true
+            return
+        }
+        
         // Determine if this is a new event or an update
         let isUpdate = existingEvent != nil
         
@@ -198,7 +221,7 @@ struct NewEventView: View {
                 
                 if !isUpdate {
                     guard let userId = profileViewModel.user?.id else {
-                       print("User ID not available")
+                        print("User ID not available")
                         return
                     }
                     viewModel.addUserEventRecord(userId: userId , eventId: eventId) { userEventResult in
@@ -239,7 +262,6 @@ struct NewEventView: View {
             return
         }
         
-        // Otherwise add it
         isAddingToCalendar = true
         
         eventKitManager.addEventToCalendar(syncEvent: SyncEvent) { result in
@@ -260,17 +282,36 @@ struct NewEventView: View {
     }
     
     private func clearAll() {
-        
+        eventName = ""
+        dueDate = Date()
+        venue = ""
+        isOutdoor = false
+        isOngoing = false
+        selectedPriority = 4
     }
 }
 
-//#Preview {
-//    let mockViewModel = ProfileViewModel()
-//    mockViewModel.user = SyncUser(
-//        id: "123",
-//        username: "abc def",
-//        email: "abcdef@example.com",
-//        createdAt: Date().timeIntervalSince1970
-//    )
-//    NewEventView(existingEvent: SyncEvent)
-//}
+#Preview {
+    let mockViewModel = ProfileViewModel()
+    mockViewModel.user = SyncUser(
+        id: "123",
+        username: "abc def",
+        email: "abcdef@example.com",
+        createdAt: Date().timeIntervalSince1970
+    )
+    
+    let mockEvent = SyncEvent(
+        eventId: "event123",
+        eventName: "Sample Event",
+        dueDate: Date().addingTimeInterval(3600).timeIntervalSince1970,
+        venue: "Sample Venue",
+        priority: 2,
+        isOutdoor: true,
+        statusId: 1,
+        createdAt: Date().timeIntervalSince1970
+    )
+    
+    return NewEventView(existingEvent: mockEvent)
+        .environmentObject(mockViewModel)
+}
+

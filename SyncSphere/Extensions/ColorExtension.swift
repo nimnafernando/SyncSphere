@@ -36,7 +36,7 @@ extension Color {
                                 int >> 8 & 0xFF,
                                 int & 0xFF)
             default:
-                (a, r, g, b) = (255, 0, 0, 0) // default to black
+                (a, r, g, b) = (255, 0, 0, 0) // black
             }
 
             self.init(.sRGB,
