@@ -29,6 +29,7 @@ struct AllEventsView: View {
     @State private var showToast = false
     @State private var toastMessage = ""
     @State private var toastType: ToastType = .success
+    @State private var refreshID = UUID()
     
     private var userId: String? {
         profileViewModel.user?.id
@@ -43,6 +44,22 @@ struct AllEventsView: View {
     }
     var body: some View {
         ZStack{
+            if showToast {
+                VStack {
+                    ToastView(message: toastMessage, type: toastType)
+                        .padding(.top, 20)
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                withAnimation {
+                                    showToast = false
+                                }
+                            }
+                        }
+                    Spacer()
+                }
+                .zIndex(1)
+            }
+            
             GradientBackground()
             VStack {
                 
@@ -103,36 +120,38 @@ struct AllEventsView: View {
                             }
                         }
                         NavigationLink(
-                            destination: NewEventView(existingEvent: selectedEvent), // change here
+                            destination: NewEventView(existingEvent: selectedEvent),
                             isActive: $isShowingEventDetail,
                             label: { EmptyView() }
                         )
                     }
                 }
-                .overlay(
-                    PopupView(
-                        title: "Delete Event",
-                        message: eventToDelete?.statusId ?? 1 != 3 ? "This event will be moved to cancelled. Are you sure you want to remove this event?" : "This will permenantly remove all the event details of the event. Are you sure you want to delete this event?",
-                        isPresented: $showPopup,
-                        confirmButtonTitle: "Delete",
-                        cancelButtonTitle: "Cancel",
-                        onConfirm: {
-                            if let event = eventToDelete {
-                                    deleteEvent(event)
-                                }
-                                eventToDelete = nil
-                                showPopup = false
-                        },
-                                onCancel: {
-                                    eventToDelete = nil
-                                    showPopup = false
-                                }
-                        )
-                    )
                 Spacer()
                 FloatingActionButton(destination: NewEventView())
+                    .onDisappear {
+                    loadEvents()
+                }
                 
-            }
+            } .overlay(
+                PopupView(
+                    title: "Delete Event",
+                    message: eventToDelete?.statusId ?? 1 != 3 ? "This event will be moved to cancelled. Are you sure you want to remove this event?" : "This will permenantly remove all the event details of the event. Are you sure you want to delete this event?",
+                    isPresented: $showPopup,
+                    confirmButtonTitle: "Delete",
+                    cancelButtonTitle: "Cancel",
+                    onConfirm: {
+                        if let event = eventToDelete {
+                                deleteEvent(event)
+                            }
+                            eventToDelete = nil
+                            showPopup = false
+                    },
+                            onCancel: {
+                                eventToDelete = nil
+                                showPopup = false
+                            }
+                    )
+                )
             .frame(maxHeight: .infinity, alignment: .top)
             .navigationTitle("Events")
             .onAppear(perform: loadEvents)
@@ -188,6 +207,7 @@ struct AllEventsView: View {
                     showToast = true
                     toastMessage = "Event restored successfully!"
                     toastType = .success
+                    refreshEvents()
                 case .failure(let error):
                     showToast = true
                     toastMessage = "Failed to restore the event: \(error.localizedDescription)"
@@ -201,6 +221,7 @@ struct AllEventsView: View {
                     showToast = true
                     toastType = .success
                     toastMessage = "Mark as completed"
+                    refreshEvents()
                 case .failure(let error):
                     showToast = true
                     toastType = .error
@@ -215,6 +236,7 @@ struct AllEventsView: View {
             viewModel.deleteEvent(eventId: event.id) { result in
                 switch result {
                 case .success():
+                    refreshEvents()
                     showToast = true
                     toastType = .success
                     toastMessage = "Event deleted successfully"
@@ -228,6 +250,7 @@ struct AllEventsView: View {
             viewModel.updateEventField(eventId: event.eventId!, fields: ["statusId": 3]) { result in
                 switch result {
                 case .success():
+                    refreshEvents()
                     showToast = true
                     toastType = .success
                     toastMessage = "Event Moved to cancelled"
@@ -239,14 +262,12 @@ struct AllEventsView: View {
             }
         }
     }
-    
-    private func updateLocalEvent(event: SyncEvent, newStatusId: Int) {
-          if let index = events.firstIndex(where: { $0.id == event.id }) {
-              var updatedEvent = events[index]
-              updatedEvent.statusId = newStatusId
-              events[index] = updatedEvent
-      }
-  }
+
+    private func refreshEvents() {
+        loadEvents()
+        refreshID = UUID()
+
+    }
 }
 
 #Preview {

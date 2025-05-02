@@ -19,7 +19,7 @@ struct SyncEvent: Codable, Identifiable {
     var statusId: Int?
     let createdAt: TimeInterval?
     var calendarEventId: String? 
-    // For Identifiable conformance
+    // For Identifiable
     var id: String {
             return eventId ?? UUID().uuidString
         }
@@ -36,7 +36,7 @@ struct SyncEvent: Codable, Identifiable {
         self.createdAt = createdAt
     }
     
-    // Keep the Codable initializer for completeness
+    // Codable initializer
     enum CodingKeys: String, CodingKey {
         case eventId
         case eventName

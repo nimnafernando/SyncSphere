@@ -162,7 +162,7 @@ class EventViewModel: ObservableObject {
             case .success(let events):
                 let currentTime = Date().timeIntervalSince1970
                 
-                // Filter out events whose due date is in the past
+                // Filter out due dates in the past
                 let upcomingEvents = events.filter { $0.dueDate > currentTime }
                 
                 if upcomingEvents.isEmpty {
@@ -170,11 +170,18 @@ class EventViewModel: ObservableObject {
                     return
                 }
                 
-                // Sort upcoming events by due date (latest first)
                 let sortedEvents = upcomingEvents.sorted { (event1, event2) -> Bool in
+                    //compare by due date
                     if event1.dueDate != event2.dueDate {
-                        return event1.dueDate > event2.dueDate
+                        return event1.dueDate < event2.dueDate
                     }
+                    
+                    //compare by priority (highest first)
+                    if event1.priority != event2.priority {
+                        return event1.priority ?? 3 > event2.priority ?? 3
+                    }
+                    
+                    //compare by creation date (oldest first)
                     let created1 = event1.createdAt ?? 0
                     let created2 = event2.createdAt ?? 0
                     return created1 < created2
@@ -298,7 +305,7 @@ class EventViewModel: ObservableObject {
     
     func deleteEvent(eventId: String, completion: @escaping (Result<Void, Error>) -> Void) {
         let db = Firestore.firestore()
-        let eventRef = db.collection("events").document(eventId)
+        let eventRef = db.collection("event").document(eventId)
         let userEventsRef = db.collection("userEvents")
         
         eventRef.delete { error in
