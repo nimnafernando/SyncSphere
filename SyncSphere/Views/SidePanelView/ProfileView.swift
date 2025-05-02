@@ -30,20 +30,14 @@ struct ProfileView: View {
                 GradientBackground()
                 
                 VStack(){
-                    
-                    Text("Profile")
-                        .font(.title)
-                        .bold()
-                        .padding(.vertical, 20)
-                    
                     if let user = profileViewModel.user {
                         
                         VStack(alignment: .leading) {
                             Text("Welcome,")
-                                .font(.callout)
+                                .font(.headline)
                                 .padding(.bottom, 1)
                             Text(user.username)
-                                .font(.title2)
+                                .font(.title)
                                 .bold()
                         }
                         .frame(width: UIScreen.main.bounds.width*0.9, alignment: .leading)
@@ -53,7 +47,7 @@ struct ProfileView: View {
                     VStack {
                         BorderedText(text: user.username, placeholder: "User Name", iconName: "pencil", frontImage: "person", color: .blue)
                             .padding(.top, 20)
-                        BorderedText(text: user.email, placeholder: "User Email", iconName:"pencil", frontImage: "at", color: .blue)
+                        BorderedText(text: user.email, placeholder: "User Email", frontImage: "at")
                         BorderedText(text: DateFormatExtension.formatDate(from: user.createdAt), placeholder: "Created At", frontImage: "calendar")
                             .padding(.bottom, 20)
                     }

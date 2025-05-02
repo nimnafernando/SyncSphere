@@ -62,8 +62,7 @@ struct PopupView<Content: View>: View {
                             isPresented.wrappedValue = false
                         }
                         .foregroundColor(.gray)
-
-                        Spacer()
+                        .padding(.trailing, 10)
                         
                         Button(confirmButtonTitle) {
                             onConfirm?()
