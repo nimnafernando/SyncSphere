@@ -23,6 +23,9 @@
     "Add Category" : {
 
     },
+    "Add New Task" : {
+
+    },
     "Add New Task Category" : {
 
     },
@@ -30,6 +33,12 @@
 
     },
     "Coming Up" : {
+
+    },
+    "Complete" : {
+
+    },
+    "Delete" : {
 
     },
     "Due Date" : {
@@ -100,6 +109,9 @@
     "No events found" : {
 
     },
+    "No tasks available, but you can add tasks." : {
+
+    },
     "Outdoor" : {
 
     },
@@ -122,6 +134,9 @@
       "extractionState" : "manual"
     },
     "Task Category" : {
+
+    },
+    "Tasks" : {
 
     },
     "Weather Forcast" : {
