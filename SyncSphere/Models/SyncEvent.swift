@@ -18,14 +18,14 @@ struct SyncEvent: Codable, Identifiable {
     let isOutdoor: Bool
     var statusId: Int?
     let createdAt: TimeInterval?
-    var calendarEventId: String? 
+    var calendarEventId: String?
     // For Identifiable
     var id: String {
             return eventId ?? UUID().uuidString
         }
     
     // Custom initializer for manual creation
-    init(eventId: String?, eventName: String, dueDate: TimeInterval, venue: String?, priority: Int?, isOutdoor: Bool, statusId: Int?, createdAt: TimeInterval?) {
+    init(eventId: String?, eventName: String, dueDate: TimeInterval, venue: String?, priority: Int?, isOutdoor: Bool, statusId: Int?, createdAt: TimeInterval?, calendarEventId: String?) {
         self.eventId = eventId
         self.eventName = eventName
         self.dueDate = dueDate
@@ -34,6 +34,7 @@ struct SyncEvent: Codable, Identifiable {
         self.isOutdoor = isOutdoor
         self.statusId = statusId
         self.createdAt = createdAt
+        self.calendarEventId = calendarEventId
     }
     
     // Codable initializer
@@ -46,6 +47,7 @@ struct SyncEvent: Codable, Identifiable {
         case isOutdoor
         case statusId
         case createdAt
+        case calendarEventId
     }
     
 }

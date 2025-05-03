@@ -209,7 +209,8 @@ struct NewEventView: View {
             priority: selectedPriority,
             isOutdoor: isOutdoor,
             statusId: isOngoing == true ? 0 : 1,
-            createdAt: existingEvent?.createdAt ?? Date().timeIntervalSince1970
+            createdAt: existingEvent?.createdAt ?? Date().timeIntervalSince1970,
+            calendarEventId: existingEvent?.calendarEventId ?? nil
         )
         
         viewModel.addEventToFirestore(eventToSave) { result in
@@ -231,7 +232,7 @@ struct NewEventView: View {
                     }
                 }
                 
-                addToCalendar(SyncEvent: eventToSave)
+                addToCalendar(SyncEvent: eventToSave, createdEventId: eventId)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     dismiss()
                 }
@@ -243,14 +244,13 @@ struct NewEventView: View {
         }
     }
     
-    private func addToCalendar(SyncEvent: SyncEvent) {
-        // If already added, remove it
-        if let existingId = calendarEventId {
-            eventKitManager.removeEventFromCalendar(identifier: existingId) { result in
+    private func addToCalendar(SyncEvent: SyncEvent, createdEventId: String) {
+        // If already added, remove it first
+        if let calendarId = SyncEvent.calendarEventId {
+            eventKitManager.removeEventFromCalendar(identifier: SyncEvent.calendarEventId ?? calendarId) { result in
                 DispatchQueue.main.async {
                     switch result {
                     case .success:
-                        calendarEventId = nil
                         alertMessage = "Event removed from calendar"
                         showAlert = true
                     case .failure(let error):
@@ -259,7 +259,6 @@ struct NewEventView: View {
                     }
                 }
             }
-            return
         }
         
         isAddingToCalendar = true
@@ -270,16 +269,38 @@ struct NewEventView: View {
                 
                 switch result {
                 case .success(let eventId):
-                    calendarEventId = eventId
                     alertMessage = "Successfully added to calendar"
+                    print("calendar id: ", eventId)
+                    // Save EventKit calendar identifier
+                    if let syncId = SyncEvent.eventId {
+                        let fields: [String: Any] = ["calendarEventId": eventId]
+                        viewModel.updateEventField(eventId: syncId, fields: fields) { result in
+                            switch result {
+                            case .success:
+                                print("calendarEventId updated in Firestore")
+                            case .failure(let error):
+                                print("Failed to update Firestore: \(error.localizedDescription)")
+                            }
+                        }
+                    }
+
                 case .failure(let error):
                     alertMessage = "Failed to add: \(error.localizedDescription)"
                 }
                 
                 showAlert = true
             }
+            viewModel.updateEventField(eventId: createdEventId, fields: ["calendarEventId": calendarEventId ?? ""]) { result in
+                switch result {
+                case .success:
+                    print("calendarEventId updated in Firestore")
+                case .failure(let error):
+                    print("Failed to update Firestore: \(error.localizedDescription)")
+                }
+            }
         }
     }
+
     
     private func clearAll() {
         eventName = ""
@@ -308,7 +329,8 @@ struct NewEventView: View {
         priority: 2,
         isOutdoor: true,
         statusId: 1,
-        createdAt: Date().timeIntervalSince1970
+        createdAt: Date().timeIntervalSince1970,
+        calendarEventId: nil
     )
     
     return NewEventView(existingEvent: mockEvent)

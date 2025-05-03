@@ -87,7 +87,8 @@ class EventViewModel: ObservableObject {
                                 priority: data["priority"] as? Int,
                                 isOutdoor: isOutdoor,
                                 statusId: statusId,
-                                createdAt: createdAt
+                                createdAt: createdAt,
+                                calendarEventId:  data["calendarEventId"] as? String ?? ""
                             )
                             
                             print("Created event: \(event.eventName)")

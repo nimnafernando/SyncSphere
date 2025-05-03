@@ -1,5 +1,6 @@
 import EventKit
 import SwiftUI
+import Firebase
 
 class EventKitManager {
     private let eventStore = EKEventStore()
@@ -77,21 +78,24 @@ class EventKitManager {
         }
     }
     
-    // Remove event from calendar with completion handler
     func removeEventFromCalendar(identifier: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let event = try? eventStore.event(withIdentifier: identifier) else {
+        guard let event = eventStore.event(withIdentifier: identifier) else {
+            print("Calendar event not found for ID: \(identifier)")
             let error = NSError(domain: "EventKitManager",
-                               code: 2,
-                               userInfo: [NSLocalizedDescriptionKey: "Event not found"])
+                                code: 2,
+                                userInfo: [NSLocalizedDescriptionKey: "Event not found"])
             completion(.failure(error))
             return
         }
-        
+
         do {
             try eventStore.remove(event, span: .thisEvent)
+            print("Successfully removed event: \(identifier)")
             completion(.success(()))
         } catch {
+            print("Failed to remove event: \(error.localizedDescription)")
             completion(.failure(error))
         }
     }
+
 }
