@@ -18,6 +18,7 @@ struct AllEventsView: View {
     
     @EnvironmentObject private var profileViewModel: ProfileViewModel
     @StateObject private var viewModel = EventViewModel()
+    private let eventKitManager = EventKitManager()
     @State private var events: [SyncEvent] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
@@ -258,6 +259,18 @@ struct AllEventsView: View {
                     showToast = true
                     toastType = .success
                     toastMessage = "Failed to update the event: \(error.localizedDescription)"
+                }
+            }
+        }
+        if let calendarId = event.calendarEventId {
+            eventKitManager.removeEventFromCalendar(identifier: event.calendarEventId ?? calendarId) { result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success:
+                        print("Removed from eventkit")
+                    case .failure(let error):
+                        print("Faile to removed from eventkit")
+                    }
                 }
             }
         }
