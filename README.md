@@ -7,9 +7,9 @@ How SyncSphere is Different from Existing Event Planner Apps
 Unlike apps like Eventbrite or Cvent, which focus mainly on ticketing and event promotion, SyncSphere prioritizes detailed task and budget management.
 Users can track expenses alongside task progress—something missing in many existing event planner apps.
 
-2. Vendor Coordination & Contract Management
-Unlike traditional event planning apps that focus on helping users manage vendor contracts and track expenses.
-Current apps do not integrate vendor coordination as a core feature—this makes SyncSphere a full-fledged event management tool rather than just a scheduler.
+2. Calendar Integration
+Unlike traditional event planning apps that focus on helping users manage their tasks by adding to calendar on iPhone.
+Current apps do not integrate this as a feature.
 
 3. Remote Event Reporting & Real-Time Updates
 Unlike apps like Cvent, which primarily serve corporate events, SyncSphere allows users to monitor and share real-time event progress with user reminders.
