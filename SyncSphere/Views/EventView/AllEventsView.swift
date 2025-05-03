@@ -37,10 +37,9 @@ struct AllEventsView: View {
         _selectedTab = State(initialValue: initialTab)
     }
     var body: some View {
-        ZStack{
+        ZStack {
             GradientBackground()
             VStack {
-                
                 HStack() {
                     ForEach(Tab.allCases, id: \.self) { tab in
                         Text(tab.rawValue).tag(tab)
@@ -80,21 +79,25 @@ struct AllEventsView: View {
                                 .foregroundColor(.gray)
                                 .frame(maxWidth: .infinity, alignment: .center)
                         } else {
-                            ForEach(filteredEvents) { event in
-                                
-                                EventCard(title: event.eventName, date: event.dueDate,
-                                          onComplete: {
-                                    markEventAsCompleted(event)
-                                },
-                                          onDelete: {
-                                    deleteEvent(event)
-                                },
-                                          onTap: {
-                                    selectedEvent = event
-                                    isShowingEventDetail = true
-                                })
-                                
+                            LazyVStack(spacing: 12) {
+                                ForEach(filteredEvents) { event in
+                                    NavigationLink(destination: EventDetailView(event: event)) {
+                                        EventCard(
+                                            title: event.eventName,
+                                            date: event.dueDate,
+                                            onComplete: {
+                                                markEventAsCompleted(event)
+                                            },
+                                            onDelete: {
+                                                deleteEvent(event)
+                                            },
+                                            onTap: nil
+                                        )
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
                             }
+                            .padding(.horizontal)
                         }
                     }
                 }
@@ -161,10 +164,8 @@ struct AllEventsView: View {
     }
     
     func navigateToEventDetail(_ event: SyncEvent) {
-        // Implement your navigation logic here
-        // For example:
-        // selectedEvent = event
-        // isShowingDetailView = true
+        selectedEvent = event
+        isShowingEventDetail = true
     }
 }
 

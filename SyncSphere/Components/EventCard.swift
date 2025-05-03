@@ -138,10 +138,6 @@ struct EventCard: View {
                              }
                          }
                  )
-                 .onTapGesture {
-                     // Handle navigation on tap
-                     onTap?()
-                 }
                  .padding(.bottom, 10)
          }
      }

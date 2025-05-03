@@ -9,7 +9,7 @@
 import Foundation
 import FirebaseFirestore
 
-struct SyncEvent: Codable, Identifiable {
+struct SyncEvent: Codable, Identifiable, Hashable {
     var eventId: String?
     let eventName: String
     let dueDate: TimeInterval
@@ -18,11 +18,20 @@ struct SyncEvent: Codable, Identifiable {
     let isOutdoor: Bool
     let statusId: Int?
     let createdAt: TimeInterval?
-    var calendarEventId: String? 
+    var calendarEventId: String?
+    
     // For Identifiable conformance
     var id: String {
-            return eventId ?? UUID().uuidString
-        }
+        return eventId ?? UUID().uuidString
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(eventId) // Use the unique identifier for hashing
+    }
+    
+    static func ==(lhs: SyncEvent, rhs: SyncEvent) -> Bool {
+        return lhs.eventId == rhs.eventId
+    }
     
     // Custom initializer for manual creation
     init(eventId: String?, eventName: String, dueDate: TimeInterval, venue: String?, priority: Int?, isOutdoor: Bool, statusId: Int?, createdAt: TimeInterval?) {
