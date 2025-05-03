@@ -1,0 +1,135 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "%@" : {
+
+    },
+    "%lld / %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "6/10 Task Completed" : {
+
+    },
+    "Add Category" : {
+
+    },
+    "Add New Task Category" : {
+
+    },
+    "Category Name" : {
+
+    },
+    "Coming Up" : {
+
+    },
+    "Due Date" : {
+
+    },
+    "Error: %@" : {
+
+    },
+    "Event Categories" : {
+
+    },
+    "Event Priority" : {
+
+    },
+    "event_task_categories_header_text" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Event Task Categories"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categorías de tareas del evento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "イベントタスクのカテゴリ"
+          }
+        }
+      }
+    },
+    "Events" : {
+
+    },
+    "Forgot Password" : {
+
+    },
+    "Hello, World!" : {
+
+    },
+    "Help" : {
+
+    },
+    "Hex Color (e.g. #FF5733)" : {
+
+    },
+    "Loading events..." : {
+
+    },
+    "Loading your events..." : {
+
+    },
+    "Mark as Ongoing" : {
+
+    },
+    "New Event" : {
+
+    },
+    "New to SyncSphere?" : {
+
+    },
+    "No events found" : {
+
+    },
+    "Outdoor" : {
+
+    },
+    "Profile" : {
+
+    },
+    "See Details" : {
+
+    },
+    "Sign Out" : {
+
+    },
+    "Sign up" : {
+
+    },
+    "Sign Up" : {
+
+    },
+    "Spanish" : {
+      "extractionState" : "manual"
+    },
+    "Task Category" : {
+
+    },
+    "Weather Forcast" : {
+
+    },
+    "Welcome," : {
+
+    }
+  },
+  "version" : "1.0"
+}

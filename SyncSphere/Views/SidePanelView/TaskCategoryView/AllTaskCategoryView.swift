@@ -13,7 +13,7 @@ struct AllTaskCategoryView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            Text("Event Categories")
+            Text(NSLocalizedString("event_task_categories_header_text", comment: ""))
                 .font(.title3)
                 .padding()
             
