@@ -10,7 +10,7 @@ import SwiftUI
 struct AllEventsView: View {
     
     enum Tab: String, CaseIterable {
-        case inprogress = "InProgress"
+        case inprogress = "Ongoing"
         case upcoming = "Upcoming"
         case completed = "Completed"
         case cancelled = "Cancelled"
@@ -44,7 +44,7 @@ struct AllEventsView: View {
         _selectedTab = State(initialValue: initialTab)
     }
     var body: some View {
-        ZStack{
+        ZStack {
             if showToast {
                 VStack {
                     ToastView(message: toastMessage, type: toastType)
@@ -62,9 +62,10 @@ struct AllEventsView: View {
             }
             
             GradientBackground()
-            VStack {
-                
-                HStack() {
+            
+            VStack(spacing: 0) {
+                // Tab bar
+                HStack {
                     ForEach(Tab.allCases, id: \.self) { tab in
                         Text(tab.rawValue).tag(tab)
                             .font(.subheadline)
@@ -85,80 +86,98 @@ struct AllEventsView: View {
                     }
                 }
                 .padding(.top, 8)
+                .padding(.horizontal)
                 
-                ScrollView{
-                    // Event List Content
-                    if isLoading {
-                        ProgressView("Loading events...")
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    } else if let error = errorMessage {
-                        Text("Error: \(error)")
-                            .foregroundColor(.red)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    } else {
-                        let filteredEvents = eventsForSelectedTab()
-                        if filteredEvents.isEmpty {
-                            Text("No events found")
-                                .italic()
-                                .foregroundColor(.gray)
+                // Content area
+                ScrollView {
+                    VStack(spacing: 12) {
+                        if isLoading {
+                            ProgressView("Loading events...")
                                 .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.top, 40)
+                        } else if let error = errorMessage {
+                            Text("Error: \(error)")
+                                .foregroundColor(.red)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.top, 40)
                         } else {
-                            ForEach(filteredEvents) { event in
-                                
-                                EventCard(title: event.eventName, date: event.dueDate, statusId: event.statusId ?? 1,
-                                          onComplete: {
-                                    markEventAsCompleted(event)
-                                },
-                                          onDelete: {
-                                    eventToDelete = event
-                                    showPopup = true
-                                },
-                                          onTap: {
-                                    selectedEvent = event
-                                    isShowingEventDetail = true
-                                })
-                                
+                            let filteredEvents = eventsForSelectedTab()
+                            if filteredEvents.isEmpty {
+                                Text("No events found")
+                                    .italic()
+                                    .foregroundColor(.gray)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .padding(.top, 40)
+                            } else {
+                                LazyVStack(spacing: 12) {
+                                    ForEach(filteredEvents) { event in
+                                        EventCard(
+                                            title: event.eventName,
+                                            date: event.dueDate,
+                                            statusId: event.statusId ?? 1,
+                                            onComplete: {
+                                                markEventAsCompleted(event)
+                                            },
+                                            onDelete: {
+                                                eventToDelete = event
+                                                showPopup = true
+                                            },
+                                            onTap: {
+                                                selectedEvent = event
+                                                isShowingEventDetail = true
+                                            }
+                                        )
+                                        .padding(.horizontal)
+                                    }
+                                }
+                                .padding(.vertical, 12)
                             }
                         }
-                        NavigationLink(
-                            destination: NewEventView(existingEvent: selectedEvent),
-                            isActive: $isShowingEventDetail,
-                            label: { EmptyView() }
-                        )
                     }
                 }
-                Spacer()
-                FloatingActionButton(destination: NewEventView())
-                    .onDisappear {
-                    loadEvents()
-                }
+                .frame(maxWidth: .infinity)
                 
-            } .overlay(
-                PopupView(
-                    title: "Delete Event",
-                    message: eventToDelete?.statusId ?? 1 != 3 ? "This event will be moved to cancelled. Are you sure you want to remove this event?" : "This will permenantly remove all the event details of the event. Are you sure you want to delete this event?",
-                    isPresented: $showPopup,
-                    confirmButtonTitle: "Delete",
-                    cancelButtonTitle: "Cancel",
-                    onConfirm: {
-                        if let event = eventToDelete {
-                                deleteEvent(event)
-                            }
-                            eventToDelete = nil
-                            showPopup = false
-                    },
-                            onCancel: {
-                                eventToDelete = nil
-                                showPopup = false
-                            }
-                    )
+                NavigationLink(
+                    destination: NewEventView(existingEvent: selectedEvent),
+                    isActive: $isShowingEventDetail,
+                    label: { EmptyView() }
                 )
-            .frame(maxHeight: .infinity, alignment: .top)
-            .navigationTitle("Events")
-            .onAppear(perform: loadEvents)
-            .refreshable {
-                loadEvents()
             }
+            
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    FloatingActionButton(destination: NewEventView())
+                        .padding()
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(
+            PopupView(
+                title: "Delete Event",
+                message: eventToDelete?.statusId ?? 1 != 3 ? "This event will be moved to cancelled. Are you sure you want to remove this event?" : "This will permenantly remove all the event details of the event. Are you sure you want to delete this event?",
+                isPresented: $showPopup,
+                confirmButtonTitle: "Delete",
+                cancelButtonTitle: "Cancel",
+                onConfirm: {
+                    if let event = eventToDelete {
+                        deleteEvent(event)
+                    }
+                    eventToDelete = nil
+                    showPopup = false
+                },
+                onCancel: {
+                    eventToDelete = nil
+                    showPopup = false
+                }
+            )
+        )
+        .navigationTitle("Events")
+        .onAppear(perform: loadEvents)
+        .refreshable {
+            loadEvents()
         }
     }
     
