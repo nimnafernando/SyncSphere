@@ -29,6 +29,12 @@
     "Add New Task Category" : {
 
     },
+    "Add Task" : {
+
+    },
+    "Category" : {
+
+    },
     "Category Name" : {
 
     },
@@ -42,6 +48,9 @@
 
     },
     "Due Date" : {
+
+    },
+    "Enter task name" : {
 
     },
     "Error: %@" : {
@@ -118,6 +127,9 @@
     "Profile" : {
 
     },
+    "Save Task" : {
+
+    },
     "See Details" : {
 
     },
@@ -133,10 +145,19 @@
     "Spanish" : {
       "extractionState" : "manual"
     },
+    "Status" : {
+
+    },
     "Task Category" : {
 
     },
+    "Task Name" : {
+
+    },
     "Tasks" : {
+
+    },
+    "Venue" : {
 
     },
     "Weather Forcast" : {

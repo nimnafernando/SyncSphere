@@ -12,98 +12,186 @@ struct EventDetailView: View {
     let event: SyncEvent
     @StateObject private var taskViewModel = TaskViewModel()
     @State private var showNewTask = false
-
+    
+    private var priorityPills: [(title: String, value: Int, color: Color)] {
+        [
+            ("High", 1, .red),
+            ("Medium", 2, .blue),
+            ("Low", 3, .green),
+            ("default", 4, Color("Lavendar"))
+        ]
+    }
+    
+    private func formatDate(_ timestamp: TimeInterval) -> String {
+        let date = Date(timeIntervalSince1970: timestamp)
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        return formatter.string(from: date)
+    }
+    
+    
     var body: some View {
         ZStack {
             GradientBackground()
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     // ... (Event title, countdown, progress bar, etc.)
-
-                    Text("Tasks")
-                        .font(.title2)
+                    Text(event.eventName)
+                        .font(.largeTitle)
                         .bold()
+                        .padding(.top, 8)
                         .padding(.horizontal)
-
-                    if taskViewModel.tasks.isEmpty {
-                        VStack(spacing: 12) {
-                            Text("No tasks available, but you can add tasks.")
-                                .italic()
-                                .foregroundColor(.gray)
-                            Button(action: { showNewTask = true }) {
-                                HStack {
-                                    Image(systemName: "plus.circle.fill")
-                                    Text("Add New Task")
-                                }
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 16)
-                                .background(Color("Lavendar"))
-                                .foregroundColor(.white)
-                                .cornerRadius(20)
+                    
+                    // Date & Countdown Card
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(Color.white.opacity(0.7))
+                        .overlay(
+                            VStack(spacing: 12) {
+                                //                                Text(formatD(event.dueDate))
+                                //                                    .font(.headline)
+                                //                                    .foregroundColor(.gray)
+                                CountDown(dueDate: Date(timeIntervalSince1970: event.dueDate))
+                                    .padding(.top, 4)
                             }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                    } else {
-                        LazyVStack(spacing: 16) {
-                            ForEach(taskViewModel.tasks) { task in
-                                EventTaskCardView(
-                                    task: task,
-                                    onDelete: { /*taskViewModel.deleteTask(task)*/
-                                    },
-                                    onComplete: { /*taskViewModel.completeTask(task)*/
-                                    },
-                                    onTap: {
-                                        // onTap action
-                                    }
-                                )
-                            }
-                        }
+                                .padding()
+                        )
+                        .frame(maxWidth: .infinity, minHeight: 120)
                         .padding(.horizontal)
+                    
+                    // Progress Bar
+                    VStack(alignment: .leading, spacing: 8) {
+                        //                        Text("\(viewModel.completedTasksCount)/\(viewModel.tasks.count) Tasks Completed")
+                        //                            .font(.subheadline)
+                        //                            .bold()
+                        //                        CustomProgressBar(progress: viewModel.progress)
+                        //                            .frame(height: 16)
+                        CustomProgressBar()
+                            .padding(.top, 6)
                     }
-                }
-                .padding(.bottom, 80)
-            }
-
-            // Floating Action Button
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button(action: { showNewTask = true }) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 28))
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Circle().fill(Color("Lavendar")))
-                            .shadow(radius: 4)
+                    .padding(.horizontal)
+                    
+                    // Venue Section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Venue")
+                            .font(.headline)
+                        HStack {
+                            let venue = event.venue ?? ""
+                            Text(venue.isEmpty ? "No venue specified" : venue)
+                                .foregroundColor(.primary)
+                            if event.isOutdoor {
+                                Text("Outdoor")
+                                    .font(.caption)
+                                    .padding(.vertical, 4)
+                                    .padding(.horizontal, 10)
+                                    .background(Color.blue.opacity(0.15))
+                                    .foregroundColor(.blue)
+                                    .cornerRadius(12)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .background(Color.white.opacity(0.7))
+                    .cornerRadius(20)
+                    .padding(.horizontal)
+                    
+                    
+                    // Priority Section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Event Priority")
+                            .font(.headline)
+                        HStack(spacing: 12) {
+                            ForEach(priorityPills, id: \.value) { pill in
+                                Text(pill.title)
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 14)
+                                    .background(event.priority == pill.value ? pill.color : Color.white.opacity(0.9))
+                                    .foregroundColor(event.priority == pill.value ? .white : pill.color)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 40)
+                                            .stroke(pill.color, lineWidth: 1)
+                                    )
+                                    .cornerRadius(40)
+                            }
+                        }
                     }
                     .padding()
+                    .background(Color.white.opacity(0.7))
+                    .cornerRadius(20)
+                    .padding(.horizontal)
+                    
+                    Section(
+                        header:
+                            HStack {
+                                Text("Tasks")
+                                    .font(.title2)
+                                    .bold()
+                                Spacer()
+                                NavigationLink(destination: AddNewTaskView(event: event)) {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "plus.circle.fill")
+                                        Text("Add Task")
+                                    }
+                                    .font(.body)
+                                    .foregroundColor(Color("Lavendar"))
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                            .padding(.horizontal)
+                    ) {
+                        if taskViewModel.tasks.isEmpty {
+                            VStack {
+                                Text("No tasks available, but you can add tasks.")
+                                    .italic()
+                                    .foregroundColor(.gray)
+                                    .padding()
+                            }
+                            .frame(maxWidth: .infinity)
+                            .background(Color.white.opacity(0.7))
+                            .cornerRadius(16)
+                            .padding(.horizontal)
+                        } else {
+                            LazyVStack(spacing: 16) {
+                                ForEach(taskViewModel.tasks) { task in
+                                    EventTaskCardView(
+                                        task: task,
+                                        onDelete: {
+                                            //taskViewModel.deleteTask(task)
+                                        },
+                                        onComplete: {
+                                            //                                            taskViewModel.completeTask(task)
+                                        },
+                                        onTap: {
+                                            // Handle tap (e.g., show task detail)
+                                        }
+                                    )
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                    }
+                }
+                .onAppear {
+                    taskViewModel.fetchTasks(forEventId: event.eventId)
                 }
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showNewTask) {
-            // Present your NewTaskView here
-        }
-        .onAppear {
-            taskViewModel.fetchTasks(forEventId: event.eventId)
-        }
+        
     }
-}
-
-#Preview {
-    let mockEvent = SyncEvent(
-        eventId: "evt001",
-        eventName: "Team Meeting",
-        dueDate: Date().timeIntervalSince1970,
-        venue: "Colombo",
-        priority: 1,
-        isOutdoor: false,
-        statusId: 1,
-        createdAt: Date().timeIntervalSince1970
-    )
-    return NavigationStack {
-        EventDetailView(event: mockEvent)
-    }
+    
+    //#Preview {
+    //    let mockEvent = SyncEvent(
+    //        eventId: "evt001",
+    //        eventName: "Team Meeting",
+    //        dueDate: Date().timeIntervalSince1970,
+    //        venue: "Colombo",
+    //        priority: 1,
+    //        isOutdoor: false,
+    //        statusId: 1,
+    //        createdAt: Date().timeIntervalSince1970
+    //    )
+    //     NavigationStack {
+    //        EventDetailView(event: mockEvent)
+    //    }
+    //}
 }
