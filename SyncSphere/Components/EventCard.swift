@@ -95,53 +95,51 @@ struct EventCard: View {
                          .onChanged { gesture in
                              self.offset = gesture.translation.width / 2.2
                          }
-                         .onEnded { gesture in
-                             let threshold: CGFloat = 80
-                             
-                             if offset < -threshold {
-                                 // Swiped left (showing right side) - mark as completed
-                                 withAnimation {
-                                     self.offset = -UIScreen.main.bounds.width * 0.1
-                                 }
-                                 
-                                 // Small delay before triggering action and resetting
-                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                     self.onComplete?()
-                                     
-                                     // Reset after a slight delay
-                                     withAnimation {
-                                         self.offset = 0
-                                     }
-                                 }
-                             } else if offset > threshold {
-                                 // Swiped right (showing left side) - delete
-                                 withAnimation {
-                                     self.offset = UIScreen.main.bounds.width * 0.1
-                                 }
-                                 
-                                 // Small delay before triggering action and resetting
-                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                     self.onDelete?()
-                                     
-                                     // Reset after a slight delay
-                                     withAnimation {
-                                         self.offset = 0
-                                     }
-                                 }
-                             } else {
-                                 withAnimation(.spring()) {
-                                     self.offset = 0
-                                 }
-                             }
-                         }
+                        .onEnded { gesture in
+                            let threshold: CGFloat = 80
+                            
+                            if offset < -threshold {
+                                // Swiped left (showing right side) - mark as completed
+                                withAnimation {
+                                    self.offset = -UIScreen.main.bounds.width * 0.1
+                                }
+                                
+                                // Small delay before triggering action and resetting
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    self.onComplete?()
+                                    
+                                    // Reset after a slight delay
+                                    withAnimation {
+                                        self.offset = 0
+                                    }
+                                }
+                            } else if offset > threshold {
+                                // Swiped right (showing left side) - delete
+                                withAnimation {
+                                    self.offset = UIScreen.main.bounds.width * 0.1
+                                }
+                                
+                                // Small delay before triggering action and resetting
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    self.onDelete?()
+                                    
+                                    // Reset after a slight delay
+                                    withAnimation {
+                                        self.offset = 0
+                                    }
+                                }
+                            } else {
+                                withAnimation(.spring()) {
+                                    self.offset = 0
+                                }
+                            }
+                        }
                  )
-                 .onTapGesture {
-                     onTap?()
-                 }
                  .padding(.bottom, 10)
          }
      }
 }
+                     
  
 
 

@@ -10,7 +10,7 @@ import SwiftUI
 struct AllEventsView: View {
     
     enum Tab: String, CaseIterable {
-        case inprogress = "Ongoing"
+        case inprogress = "InProgress"
         case upcoming = "Upcoming"
         case completed = "Completed"
         case cancelled = "Cancelled"
@@ -18,19 +18,12 @@ struct AllEventsView: View {
     
     @EnvironmentObject private var profileViewModel: ProfileViewModel
     @StateObject private var viewModel = EventViewModel()
-    private let eventKitManager = EventKitManager()
     @State private var events: [SyncEvent] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @State private var showPopup = false
-    @State private var selectedEvent: SyncEvent? = nil
-    @State private var eventToDelete: SyncEvent? = nil
-    @State private var isShowingEventDetail = false
     
-    @State private var showToast = false
-    @State private var toastMessage = ""
-    @State private var toastType: ToastType = .success
-    @State private var refreshID = UUID()
+    @State private var selectedEvent: SyncEvent? = nil
+    @State private var isShowingEventDetail = false
     
     private var userId: String? {
         profileViewModel.user?.id
@@ -45,140 +38,114 @@ struct AllEventsView: View {
     }
     var body: some View {
         ZStack {
-            if showToast {
-                VStack {
-                    ToastView(message: toastMessage, type: toastType)
-                        .padding(.top, 20)
-                        .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                withAnimation {
-                                    showToast = false
-                                }
-                            }
-                        }
-                    Spacer()
-                }
-                .zIndex(1)
-            }
-            
             GradientBackground()
-            
-            VStack(spacing: 0) {
-                // Tab bar
-                HStack {
-                    ForEach(Tab.allCases, id: \.self) { tab in
-                        Text(tab.rawValue).tag(tab)
-                            .font(.subheadline)
-                            .padding(.vertical, 4)
-                            .padding(.horizontal, 8)
-                            .background(selectedTab == tab ? Color("Lavendar") : Color.gray.opacity(0.1))
-                            .foregroundColor(selectedTab == tab ? .white : .gray)
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(selectedTab == tab ? Color("Lavendar") : Color.gray.opacity(0.3), lineWidth: 1)
-                            )
-                            .onTapGesture {
-                                withAnimation {
-                                    selectedTab = tab
-                                }
-                            }
-                    }
-                }
-                .padding(.top, 8)
-                .padding(.horizontal)
-                
-                // Content area
-                ScrollView {
-                    VStack(spacing: 12) {
-                        if isLoading {
-                            ProgressView("Loading events...")
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .padding(.top, 40)
-                        } else if let error = errorMessage {
-                            Text("Error: \(error)")
-                                .foregroundColor(.red)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .padding(.top, 40)
-                        } else {
-                            let filteredEvents = eventsForSelectedTab()
-                            if filteredEvents.isEmpty {
-                                Text("No events found")
-                                    .italic()
-                                    .foregroundColor(.gray)
-                                    .frame(maxWidth: .infinity, alignment: .center)
-                                    .padding(.top, 40)
-                            } else {
-                                LazyVStack(spacing: 12) {
-                                    ForEach(filteredEvents) { event in
-                                        EventCard(
-                                            title: event.eventName,
-                                            date: event.dueDate,
-                                            statusId: event.statusId ?? 1,
-                                            onComplete: {
-                                                markEventAsCompleted(event)
-                                            },
-                                            onDelete: {
-                                                eventToDelete = event
-                                                showPopup = true
-                                            },
-                                            onTap: {
-                                                selectedEvent = event
-                                                isShowingEventDetail = true
-                                            }
-                                        )
-                                        .padding(.horizontal)
-                                    }
-                                }
-                                .padding(.vertical, 12)
-                            }
-                        }
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                
-                NavigationLink(
-                    destination: NewEventView(existingEvent: selectedEvent),
-                    isActive: $isShowingEventDetail,
-                    label: { EmptyView() }
-                )
-            }
-            
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    FloatingActionButton(destination: NewEventView())
-                        .padding()
-                }
-            }
+            mainContent
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .overlay(
-            PopupView(
-                title: "Delete Event",
-                message: eventToDelete?.statusId ?? 1 != 3 ? "This event will be moved to cancelled. Are you sure you want to remove this event?" : "This will permenantly remove all the event details of the event. Are you sure you want to delete this event?",
-                isPresented: $showPopup,
-                confirmButtonTitle: "Delete",
-                cancelButtonTitle: "Cancel",
-                onConfirm: {
-                    if let event = eventToDelete {
-                        deleteEvent(event)
-                    }
-                    eventToDelete = nil
-                    showPopup = false
-                },
-                onCancel: {
-                    eventToDelete = nil
-                    showPopup = false
-                }
-            )
-        )
+    }
+    
+    private var mainContent: some View {
+        VStack {
+            tabBar
+            eventList
+            Spacer()
+            FloatingActionButton(destination: NewEventView())
+        }
+        .frame(maxHeight: .infinity, alignment: .top)
         .navigationTitle("Events")
         .onAppear(perform: loadEvents)
         .refreshable {
             loadEvents()
         }
+    }
+    
+    private var tabBar: some View {
+        HStack() {
+            ForEach(Tab.allCases, id: \.self) { tab in
+                tabButton(for: tab)
+            }
+        }
+        .padding(.top, 8)
+    }
+    
+    private func tabButton(for tab: Tab) -> some View {
+        Text(tab.rawValue).tag(tab)
+            .font(.subheadline)
+            .padding(.vertical, 4)
+            .padding(.horizontal, 8)
+            .background(selectedTab == tab ? Color("Lavendar") : Color.gray.opacity(0.1))
+            .foregroundColor(selectedTab == tab ? .white : .gray)
+            .cornerRadius(16)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(selectedTab == tab ? Color("Lavendar") : Color.gray.opacity(0.3), lineWidth: 1)
+            )
+            .onTapGesture {
+                withAnimation {
+                    selectedTab = tab
+                }
+            }
+    }
+    
+    private var eventList: some View {
+        ScrollView {
+            if isLoading {
+                loadingView
+            } else if let error = errorMessage {
+                errorView(error)
+            } else {
+                eventsContent
+            }
+        }
+    }
+    
+    private var loadingView: some View {
+        ProgressView("Loading events...")
+            .frame(maxWidth: .infinity, alignment: .center)
+    }
+    
+    private func errorView(_ error: String) -> some View {
+        Text("Error: \(error)")
+            .foregroundColor(.red)
+            .frame(maxWidth: .infinity, alignment: .center)
+    }
+    
+    private var eventsContent: some View {
+        let filteredEvents = eventsForSelectedTab()
+        if filteredEvents.isEmpty {
+            return AnyView(
+                Text("No events found")
+                    .italic()
+                    .foregroundColor(.gray)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            )
+        } else {
+            return AnyView(
+                LazyVStack(spacing: 12) {
+                    ForEach(filteredEvents) { event in
+                        eventRow(for: event)
+                    }
+                }
+                .padding(.horizontal)
+            )
+        }
+    }
+    
+    private func eventRow(for event: SyncEvent) -> some View {
+        NavigationLink(destination: EventDetailView(event: event)) {
+            EventCard(
+                title: event.eventName,
+                date: event.dueDate,
+                statusId: event.statusId ?? 1,
+                onComplete: {
+                    markEventAsCompleted(event)
+                },
+                onDelete: {
+                    deleteEvent(event)
+                },
+                onTap: nil
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
     
     private func eventsForSelectedTab() -> [SyncEvent] {
@@ -199,11 +166,13 @@ struct AllEventsView: View {
         errorMessage = nil
         
         guard let userId = userId, !userId.isEmpty else {
-            print("User ID is empty")
+            print("User ID is nil or empty")
             isLoading = false
-            errorMessage = "No user available"
+            errorMessage = "No user ID available"
             return
         }
+        
+        print("Loading events for user ID: \(userId)")
         
         viewModel.getEventsForUser(userId: userId) { result in
             self.isLoading = false
@@ -220,96 +189,29 @@ struct AllEventsView: View {
     }
     
     func markEventAsCompleted(_ event: SyncEvent) {
-        if (event.statusId == 3){
-            viewModel.updateEventField(eventId: event.eventId!, fields: ["statusId": 1]) { result in
-                switch result {
-                case .success():
-                    showToast = true
-                    toastMessage = "Event restored successfully!"
-                    toastType = .success
-                    refreshEvents()
-                case .failure(let error):
-                    showToast = true
-                    toastMessage = "Failed to restore the event: \(error.localizedDescription)"
-                    toastType = .error
-                }
-            }
-        } else {
-            viewModel.updateEventField(eventId: event.eventId!, fields: ["statusId": 2]) { result in
-                switch result {
-                case .success():
-                    showToast = true
-                    toastType = .success
-                    toastMessage = "Mark as completed"
-                    refreshEvents()
-                case .failure(let error):
-                    showToast = true
-                    toastType = .error
-                    toastMessage = "Failed to update the event: \(error.localizedDescription)"
-                }
-            }
-        }
+        print("event", event)
     }
     
     func deleteEvent(_ event: SyncEvent) {
-        if (event.statusId == 3) {
-            viewModel.deleteEvent(eventId: event.id) { result in
-                switch result {
-                case .success():
-                    refreshEvents()
-                    showToast = true
-                    toastType = .success
-                    toastMessage = "Event deleted successfully"
-                case .failure(let error):
-                    showToast = true
-                    toastType = .error
-                    toastMessage = "Failed to update the event: \(error.localizedDescription)"
-                }
-            }
-        } else {
-            viewModel.updateEventField(eventId: event.eventId!, fields: ["statusId": 3]) { result in
-                switch result {
-                case .success():
-                    refreshEvents()
-                    showToast = true
-                    toastType = .success
-                    toastMessage = "Event Moved to cancelled"
-                case .failure(let error):
-                    showToast = true
-                    toastType = .success
-                    toastMessage = "Failed to update the event: \(error.localizedDescription)"
-                }
-            }
-        }
-        if let calendarId = event.calendarEventId {
-            eventKitManager.removeEventFromCalendar(identifier: event.calendarEventId ?? calendarId) { result in
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success:
-                        print("Removed from eventkit")
-                    case .failure(let error):
-                        print("Faile to removed from eventkit")
-                    }
-                }
-            }
-        }
+        print("event", event)
     }
-
-    private func refreshEvents() {
-        loadEvents()
-        refreshID = UUID()
-
+    
+    func navigateToEventDetail(_ event: SyncEvent) {
+        selectedEvent = event
+        isShowingEventDetail = true
     }
 }
+
 
 #Preview {
     let mockViewModel = ProfileViewModel()
     mockViewModel.user = SyncUser(
         id: "123",
-        username: "abc def",
-        email: "abcdef@example.com",
+        username: "Jane Doe",
+        email: "jane@example.com",
         createdAt: Date().timeIntervalSince1970
     )
     return AllEventsView()
         .environmentObject(mockViewModel)
 }
+

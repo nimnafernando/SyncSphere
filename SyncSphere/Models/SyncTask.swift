@@ -8,16 +8,14 @@
 import Foundation
 import FirebaseFirestore
 
-struct SyncTask: Codable, Identifiable {
+struct SyncTask: Codable, Identifiable, Hashable {
     
     @DocumentID var id: String?
     let taskName: String
-    let dueDate: Date
-    let taskType: String
-    let taskNotes: String
-    let isDeleted: Bool
-    let taskColor: String
-    let priorityId: Int
+    let dueDate: TimeInterval
+    let taskCategory: String?
     let eventId: String
+    let isCompleted: Bool // set this by checking status value
+    let status: Int
     
 }
