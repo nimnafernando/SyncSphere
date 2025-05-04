@@ -87,7 +87,8 @@ class EventViewModel: ObservableObject {
                                 priority: data["priority"] as? Int,
                                 isOutdoor: isOutdoor,
                                 statusId: statusId,
-                                createdAt: createdAt
+                                createdAt: createdAt,
+                                calendarEventId:  data["calendarEventId"] as? String ?? ""
                             )
                             
                             print("Created event: \(event.eventName)")
@@ -208,7 +209,6 @@ class EventViewModel: ObservableObject {
                 
                 for event in events {
                     if event.dueDate < now && event.statusId != 2 {
-                        // Assume 2 = expired status
                         if let eventId = event.eventId {
                             db.collection("event").document(eventId).updateData([
                                 "statusId": 2
