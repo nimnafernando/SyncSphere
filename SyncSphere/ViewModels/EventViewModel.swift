@@ -209,7 +209,6 @@ class EventViewModel: ObservableObject {
                 
                 for event in events {
                     if event.dueDate < now && event.statusId != 2 {
-                        // Assume 2 = expired status
                         if let eventId = event.eventId {
                             db.collection("event").document(eventId).updateData([
                                 "statusId": 2
