@@ -32,9 +32,6 @@
     "Add Task" : {
 
     },
-    "Category" : {
-
-    },
     "Category Name" : {
 
     },
@@ -133,6 +130,9 @@
     "See Details" : {
 
     },
+    "Select a task category" : {
+
+    },
     "Sign Out" : {
 
     },
@@ -158,6 +158,9 @@
 
     },
     "Venue" : {
+
+    },
+    "View Task Category" : {
 
     },
     "Weather Forcast" : {

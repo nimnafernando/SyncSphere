@@ -47,9 +47,9 @@ struct EventDetailView: View {
                         .fill(Color.white.opacity(0.7))
                         .overlay(
                             VStack(spacing: 12) {
-                                //                                Text(formatD(event.dueDate))
-                                //                                    .font(.headline)
-                                //                                    .foregroundColor(.gray)
+                                Text(formatDate(event.dueDate))
+                                    .font(.headline)
+                                    .foregroundColor(.gray)
                                 CountDown(dueDate: Date(timeIntervalSince1970: event.dueDate))
                                     .padding(.top, 4)
                             }

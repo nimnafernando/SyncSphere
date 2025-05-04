@@ -14,10 +14,8 @@ struct SyncTask: Codable, Identifiable, Hashable {
     let taskName: String
     let dueDate: TimeInterval
     let taskCategory: String?
-    let taskNotes: String
-    let priorityId: Int
     let eventId: String
-    let isCompleted: Bool
+    let isCompleted: Bool // set this by checking status value
     let status: Int
     
 }
