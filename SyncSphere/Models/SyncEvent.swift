@@ -16,7 +16,7 @@ struct SyncEvent: Codable, Identifiable, Hashable {
     let venue: String?
     let priority: Int?
     let isOutdoor: Bool
-    let statusId: Int?
+    var statusId: Int?
     let createdAt: TimeInterval?
     var calendarEventId: String?
     
@@ -34,7 +34,7 @@ struct SyncEvent: Codable, Identifiable, Hashable {
     }
     
     // Custom initializer for manual creation
-    init(eventId: String?, eventName: String, dueDate: TimeInterval, venue: String?, priority: Int?, isOutdoor: Bool, statusId: Int?, createdAt: TimeInterval?) {
+    init(eventId: String?, eventName: String, dueDate: TimeInterval, venue: String?, priority: Int?, isOutdoor: Bool, statusId: Int?, createdAt: TimeInterval?, calendarEventId: String?) {
         self.eventId = eventId
         self.eventName = eventName
         self.dueDate = dueDate
@@ -43,9 +43,10 @@ struct SyncEvent: Codable, Identifiable, Hashable {
         self.isOutdoor = isOutdoor
         self.statusId = statusId
         self.createdAt = createdAt
+        self.calendarEventId = calendarEventId
     }
     
-    // Keep the Codable initializer for completeness
+    // Codable initializer
     enum CodingKeys: String, CodingKey {
         case eventId
         case eventName
@@ -55,6 +56,7 @@ struct SyncEvent: Codable, Identifiable, Hashable {
         case isOutdoor
         case statusId
         case createdAt
+        case calendarEventId
     }
     
 }

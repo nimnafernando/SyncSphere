@@ -22,6 +22,7 @@ struct DashboardView: View {
     @State private var toastType: ToastType = .success
     @State private var isLoading = true
     @State private var hasError = false
+    @State private var viewAppeared = false
     
     var body: some View {
         NavigationStack {
@@ -99,7 +100,7 @@ struct DashboardView: View {
                                     icon: "wrench.adjustable",
                                     iconColor: .Lavendar,
                                     title: "In Progress",
-                                    subtitle: "Finished Events",
+                                    subtitle: "Already Started Events",
                                     count: "\(inProgressCount)"
                                 )
                             }
@@ -109,7 +110,7 @@ struct DashboardView: View {
                                     icon: "calendar",
                                     iconColor: .CustomPink,
                                     title: "Up Coming",
-                                    subtitle: "Finished Events",
+                                    subtitle: "Up Coming Events",
                                     count: "\(upcomingCount)"
                                 )
                             }
@@ -119,7 +120,7 @@ struct DashboardView: View {
                                     icon: "checkmark.rectangle.stack",
                                     iconColor: .green,
                                     title: "Completed",
-                                    subtitle: "Finished Events",
+                                    subtitle: "Completed Events",
                                     count: "\(completedCount)"
                                 )
                             }

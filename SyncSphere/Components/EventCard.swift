@@ -10,6 +10,7 @@ import SwiftUI
 struct EventCard: View {
     let title: String
     let date: TimeInterval
+    let statusId : Int
 
     var onComplete: (() -> Void)?
      var onDelete: (() -> Void)?
@@ -19,17 +20,16 @@ struct EventCard: View {
      
      var body: some View {
          ZStack {
-             // Action buttons background
              ZStack {
                  // Complete action (right side - appears when swiping left)
                  Rectangle()
-                     .foregroundColor(.green)
+                     .foregroundColor(statusId == 3 ? .blue :.green)
                      .cornerRadius(20)
                      .frame(width: UIScreen.main.bounds.width * 0.9)
                      .overlay(
                          HStack {
                              Spacer()
-                             Image(systemName: "checkmark.circle.fill")
+                             Image(systemName: statusId == 3 ? "repeat.circle" : "checkmark.circle.fill")
                                  .foregroundColor(.white)
                      
                          }
@@ -93,58 +93,56 @@ struct EventCard: View {
                  .gesture(
                      DragGesture()
                          .onChanged { gesture in
-                             // Add drag gesture with some resistance
                              self.offset = gesture.translation.width / 2.2
                          }
-                         .onEnded { gesture in
-                             let threshold: CGFloat = 80
-                             
-                             // Check swipe direction and distance
-                             if offset < -threshold {
-                                 // Swiped left (showing right side) - mark as completed
-                                 withAnimation {
-                                     self.offset = -UIScreen.main.bounds.width * 0.1
-                                 }
-                                 
-                                 // Small delay before triggering action and resetting
-                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                     self.onComplete?()
-                                     
-                                     // Reset after a slight delay
-                                     withAnimation {
-                                         self.offset = 0
-                                     }
-                                 }
-                             } else if offset > threshold {
-                                 // Swiped right (showing left side) - delete
-                                 withAnimation {
-                                     self.offset = UIScreen.main.bounds.width * 0.1
-                                 }
-                                 
-                                 // Small delay before triggering action and resetting
-                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                     self.onDelete?()
-                                     
-                                     // Reset after a slight delay
-                                     withAnimation {
-                                         self.offset = 0
-                                     }
-                                 }
-                             } else {
-                                 // Not enough distance, reset position
-                                 withAnimation(.spring()) {
-                                     self.offset = 0
-                                 }
-                             }
-                         }
+                        .onEnded { gesture in
+                            let threshold: CGFloat = 80
+                            
+                            if offset < -threshold {
+                                // Swiped left (showing right side) - mark as completed
+                                withAnimation {
+                                    self.offset = -UIScreen.main.bounds.width * 0.1
+                                }
+                                
+                                // Small delay before triggering action and resetting
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    self.onComplete?()
+                                    
+                                    // Reset after a slight delay
+                                    withAnimation {
+                                        self.offset = 0
+                                    }
+                                }
+                            } else if offset > threshold {
+                                // Swiped right (showing left side) - delete
+                                withAnimation {
+                                    self.offset = UIScreen.main.bounds.width * 0.1
+                                }
+                                
+                                // Small delay before triggering action and resetting
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    self.onDelete?()
+                                    
+                                    // Reset after a slight delay
+                                    withAnimation {
+                                        self.offset = 0
+                                    }
+                                }
+                            } else {
+                                withAnimation(.spring()) {
+                                    self.offset = 0
+                                }
+                            }
+                        }
                  )
                  .padding(.bottom, 10)
          }
      }
 }
+                     
  
 
 
 #Preview {
-    EventCard(title: "Title", date: 12.00)
+    EventCard(title: "Title", date: 12.00, statusId: 1)
 }

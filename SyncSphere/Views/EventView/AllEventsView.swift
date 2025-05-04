@@ -39,80 +39,113 @@ struct AllEventsView: View {
     var body: some View {
         ZStack {
             GradientBackground()
-            VStack {
-                HStack() {
-                    ForEach(Tab.allCases, id: \.self) { tab in
-                        Text(tab.rawValue).tag(tab)
-                            .font(.subheadline)
-                            .padding(.vertical, 4)
-                            .padding(.horizontal, 8)
-                            .background(selectedTab == tab ? Color("Lavendar") : Color.gray.opacity(0.1))
-                            .foregroundColor(selectedTab == tab ? .white : .gray)
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(selectedTab == tab ? Color("Lavendar") : Color.gray.opacity(0.3), lineWidth: 1)
-                            )
-                            .onTapGesture {
-                                withAnimation {
-                                    selectedTab = tab
-                                }
-                            }
-                    }
-                }
-                .padding(.top, 8)
-                
-                ScrollView{
-                    // Event List Content
-                    if isLoading {
-                        ProgressView("Loading events...")
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    } else if let error = errorMessage {
-                        Text("Error: \(error)")
-                            .foregroundColor(.red)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    } else {
-                        let filteredEvents = eventsForSelectedTab()
-                        if filteredEvents.isEmpty {
-                            Text("No events found")
-                                .italic()
-                                .foregroundColor(.gray)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                        } else {
-                            LazyVStack(spacing: 12) {
-                                ForEach(filteredEvents) { event in
-                                    NavigationLink(destination: EventDetailView(event: event)) {
-                                        EventCard(
-                                            title: event.eventName,
-                                            date: event.dueDate,
-                                            onComplete: {
-                                                markEventAsCompleted(event)
-                                            },
-                                            onDelete: {
-                                                deleteEvent(event)
-                                            },
-                                            onTap: nil
-                                        )
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                }
-                            }
-                            .padding(.horizontal)
-                        }
-                    }
-                }
-                
-                Spacer()
-                FloatingActionButton(destination: NewEventView())
-                
-            }
-            .frame(maxHeight: .infinity, alignment: .top)
-            .navigationTitle("Events")
-            .onAppear(perform: loadEvents)
-            .refreshable {
-                loadEvents()
+            mainContent
+        }
+    }
+    
+    private var mainContent: some View {
+        VStack {
+            tabBar
+            eventList
+            Spacer()
+            FloatingActionButton(destination: NewEventView())
+        }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .navigationTitle("Events")
+        .onAppear(perform: loadEvents)
+        .refreshable {
+            loadEvents()
+        }
+    }
+    
+    private var tabBar: some View {
+        HStack() {
+            ForEach(Tab.allCases, id: \.self) { tab in
+                tabButton(for: tab)
             }
         }
+        .padding(.top, 8)
+    }
+    
+    private func tabButton(for tab: Tab) -> some View {
+        Text(tab.rawValue).tag(tab)
+            .font(.subheadline)
+            .padding(.vertical, 4)
+            .padding(.horizontal, 8)
+            .background(selectedTab == tab ? Color("Lavendar") : Color.gray.opacity(0.1))
+            .foregroundColor(selectedTab == tab ? .white : .gray)
+            .cornerRadius(16)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(selectedTab == tab ? Color("Lavendar") : Color.gray.opacity(0.3), lineWidth: 1)
+            )
+            .onTapGesture {
+                withAnimation {
+                    selectedTab = tab
+                }
+            }
+    }
+    
+    private var eventList: some View {
+        ScrollView {
+            if isLoading {
+                loadingView
+            } else if let error = errorMessage {
+                errorView(error)
+            } else {
+                eventsContent
+            }
+        }
+    }
+    
+    private var loadingView: some View {
+        ProgressView("Loading events...")
+            .frame(maxWidth: .infinity, alignment: .center)
+    }
+    
+    private func errorView(_ error: String) -> some View {
+        Text("Error: \(error)")
+            .foregroundColor(.red)
+            .frame(maxWidth: .infinity, alignment: .center)
+    }
+    
+    private var eventsContent: some View {
+        let filteredEvents = eventsForSelectedTab()
+        if filteredEvents.isEmpty {
+            return AnyView(
+                Text("No events found")
+                    .italic()
+                    .foregroundColor(.gray)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            )
+        } else {
+            return AnyView(
+                LazyVStack(spacing: 12) {
+                    ForEach(filteredEvents) { event in
+                        eventRow(for: event)
+                    }
+                }
+                .padding(.horizontal)
+            )
+        }
+    }
+    
+    private func eventRow(for event: SyncEvent) -> some View {
+        NavigationLink(destination: EventDetailView(event: event)) {
+            EventCard(
+                title: event.eventName,
+                date: event.dueDate,
+                statusId: event.statusId ?? 1,
+                onComplete: {
+                    markEventAsCompleted(event)
+                },
+                onDelete: {
+                    deleteEvent(event)
+                },
+                onTap: nil
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
     
     private func eventsForSelectedTab() -> [SyncEvent] {
@@ -181,3 +214,4 @@ struct AllEventsView: View {
     return AllEventsView()
         .environmentObject(mockViewModel)
 }
+
