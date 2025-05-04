@@ -52,22 +52,33 @@ struct EventDetailView: View {
                     }
                     .padding(.top, 8)
                     .padding(.horizontal)
-                    
-                    // Date & Countdown Card
+
+                    // Countdown Section
                     RoundedRectangle(cornerRadius: 24)
                         .fill(Color.white.opacity(0.7))
                         .overlay(
-                            VStack(spacing: 12) {
-                                Text(formatDate(event.dueDate))
-                                    .font(.headline)
-                                    .foregroundColor(.gray)
+                            VStack {
                                 CountDown(dueDate: Date(timeIntervalSince1970: event.dueDate))
-                                    .padding(.top, 4)
                             }
-                                .padding()
+                            .padding(.vertical, 24) // Equal top and bottom padding
+                            .padding(.horizontal)
                         )
-                        .frame(maxWidth: .infinity, minHeight: 120)
+                        .frame(maxWidth: .infinity, minHeight: 140)
                         .padding(.horizontal)
+                    
+                    // Due Date Section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Event Date")
+                            .font(.headline)
+                        Text(formatDate(event.dueDate))
+                            .font(.title2)
+                            .foregroundColor(.gray)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .background(Color.white.opacity(0.7))
+                    .cornerRadius(20)
+                    .padding(.horizontal)
                     
                     // Progress Bar
                     VStack(alignment: .leading, spacing: 8) {
