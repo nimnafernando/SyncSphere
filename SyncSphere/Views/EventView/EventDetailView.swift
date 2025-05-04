@@ -13,6 +13,9 @@ struct EventDetailView: View {
     @StateObject private var taskViewModel = TaskViewModel()
     @State private var showNewTask = false
     
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    
     private var priorityPills: [(title: String, value: Int, color: Color)] {
         [
             ("High", 1, .red),
@@ -172,26 +175,24 @@ struct EventDetailView: View {
                     }
                 }
                 .onAppear {
-                    taskViewModel.fetchTasks(forEventId: event.eventId)
+                    loadTasks()
                 }
             }
         }
-        
     }
-    
-    //#Preview {
-    //    let mockEvent = SyncEvent(
-    //        eventId: "evt001",
-    //        eventName: "Team Meeting",
-    //        dueDate: Date().timeIntervalSince1970,
-    //        venue: "Colombo",
-    //        priority: 1,
-    //        isOutdoor: false,
-    //        statusId: 1,
-    //        createdAt: Date().timeIntervalSince1970
-    //    )
-    //     NavigationStack {
-    //        EventDetailView(event: mockEvent)
-    //    }
-    //}
-}
+        private func loadTasks() {
+            isLoading = true
+            errorMessage = nil
+            taskViewModel.fetchEventTasks(for: event) { result in
+                DispatchQueue.main.async {
+                    isLoading = false
+                    switch result {
+                    case .success(let tasks):
+                        taskViewModel.tasks = tasks
+                    case .failure(let error):
+                        errorMessage = error.localizedDescription
+                    }
+                }
+            }
+        }
+    }

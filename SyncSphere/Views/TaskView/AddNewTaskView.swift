@@ -9,6 +9,8 @@ import SwiftUI
 
 struct AddNewTaskView: View {
     let event: SyncEvent
+    
+    @StateObject private var taskViewModel = TaskViewModel()
 
     @State private var taskName: String = ""
     @State private var dueDate: Date = Date()
@@ -185,6 +187,13 @@ struct AddNewTaskView: View {
             return
         }
 
+        guard selectedCategory != "Select a task category" else {
+            toastMessage = "Please select a task category"
+            toastType = .error
+            showToast = true
+            return
+        }
+        
         // Create your EventTask model and save to Firestore or your backend
         let newTask = SyncTask(
             id: UUID().uuidString,
@@ -195,12 +204,20 @@ struct AddNewTaskView: View {
             isCompleted: selectedStatus == 2,
             status: selectedStatus
         )
-
-        // TODO: Save newTask to backend, associated with event.eventId
-
-        toastMessage = "Task added successfully!"
-        toastType = .success
-        showToast = true
+        
+        taskViewModel.addEventTask(eventId: event.eventId ?? "", task: newTask) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    toastMessage = "Task added successfully!"
+                    toastType = .success
+                case .failure(let error):
+                    toastMessage = "Failed to add task: \(error.localizedDescription)"
+                    toastType = .error
+                }
+                showToast = true
+            }
+        }
 
         // Optionally, pop the view or reset fields after a delay
     }
