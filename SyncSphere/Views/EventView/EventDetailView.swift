@@ -39,11 +39,19 @@ struct EventDetailView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     // ... (Event title, countdown, progress bar, etc.)
-                    Text(event.eventName)
-                        .font(.largeTitle)
-                        .bold()
-                        .padding(.top, 8)
-                        .padding(.horizontal)
+                    HStack {
+                        Text(event.eventName)
+                            .font(.largeTitle)
+                            .bold()
+                        Spacer()
+                        NavigationLink(destination: NewEventView(existingEvent: event)) {
+                            Image(systemName: "pencil.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(Color("Lavendar"))
+                        }
+                    }
+                    .padding(.top, 8)
+                    .padding(.horizontal)
                     
                     // Date & Countdown Card
                     RoundedRectangle(cornerRadius: 24)
