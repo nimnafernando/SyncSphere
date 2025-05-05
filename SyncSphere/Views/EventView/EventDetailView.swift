@@ -199,19 +199,33 @@ struct EventDetailView: View {
             }
         }
     }
-        private func loadTasks() {
-            isLoading = true
-            errorMessage = nil
-            taskViewModel.fetchEventTasks(for: event) { result in
-                DispatchQueue.main.async {
-                    isLoading = false
-                    switch result {
-                    case .success(let tasks):
-                        taskViewModel.tasks = tasks
-                    case .failure(let error):
-                        errorMessage = error.localizedDescription
-                    }
+    
+    private func loadTasks() {
+        print("EventDetailView: Starting to load tasks")
+        
+        guard let eventId = event.eventId else {
+            print("EventDetailView: Event ID is missing")
+            errorMessage = "Event ID is missing"
+            return
+        }
+        
+        print("EventDetailView: Found event ID: \(eventId)")
+        
+        isLoading = true
+        errorMessage = nil
+        
+        taskViewModel.fetchEventTasks(for: event) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let tasks):
+                    print("EventDetailView: Successfully loaded \(tasks.count) tasks")
+                    taskViewModel.tasks = tasks
+                case .failure(let error):
+                    print("EventDetailView: Failed to load tasks: \(error.localizedDescription)")
+                    errorMessage = error.localizedDescription
                 }
             }
         }
     }
+}
