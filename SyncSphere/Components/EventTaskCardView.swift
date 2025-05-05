@@ -16,7 +16,7 @@ struct EventTaskCardView: View {
     @StateObject private var categoryViewModel = TaskCategoryViewModel()
     @State private var categoryName: String = ""
     @State private var categoryColor: String = "#3498DB" // Default color
-
+    
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             RoundedRectangle(cornerRadius: 16)
@@ -27,12 +27,12 @@ struct EventTaskCardView: View {
                         .foregroundColor(task.isCompleted ? .green : .gray)
                         .font(.system(size: 24))
                 )
-
+            
             VStack(alignment: .leading, spacing: 8) {
                 Text(task.taskName)
                     .font(.headline)
                     .foregroundColor(.primary)
-
+                
                 HStack(spacing: 8) {
                     Image(systemName: "calendar")
                         .font(.system(size: 14))
@@ -41,7 +41,7 @@ struct EventTaskCardView: View {
                         .font(.caption)
                         .foregroundColor(.gray)
                 }
-
+                
                 HStack(spacing: 8) {
                     if !categoryName.isEmpty {
                         Text(categoryName)
@@ -64,7 +64,7 @@ struct EventTaskCardView: View {
             Spacer()
         }
         .padding()
-        .background(Color.white.opacity(0.9))
+        .background(Color(hex: categoryColor).opacity(0.1))
         .cornerRadius(20)
         .shadow(color: Color.black.opacity(0.03), radius: 4, x: 0, y: 2)
         .swipeActions(edge: .trailing) {
@@ -87,7 +87,7 @@ struct EventTaskCardView: View {
             loadCategoryDetails()
         }
     }
-
+    
     private var statusText: String {
         switch task.status {
         case 0: return "Not Started"
@@ -96,7 +96,7 @@ struct EventTaskCardView: View {
         default: return "Unknown"
         }
     }
-
+    
     private var statusColor: Color {
         switch task.status {
         case 0: return .red
@@ -105,7 +105,7 @@ struct EventTaskCardView: View {
         default: return .gray
         }
     }
-
+    
     private func formatDate(_ timestamp: TimeInterval) -> String {
         let date = Date(timeIntervalSince1970: timestamp)
         let formatter = DateFormatter()
@@ -114,14 +114,29 @@ struct EventTaskCardView: View {
     }
     
     private func loadCategoryDetails() {
-       // First fetch all categories
-       categoryViewModel.fetchAllTaskCategories()
-       
-       // Then find the matching category
-       if let category = categoryViewModel.categories.first(where: { $0.id == task.taskCategoryId }) {
-           categoryName = category.name
-           categoryColor = category.color ?? "#3498DB"
-       }
-   }
+        print("EventTaskCardView: Starting to load category details for task: \(task.taskName)")
+        print("EventTaskCardView: Task category ID: \(task.taskCategoryId)")
+        
+        // First fetch all categories
+        categoryViewModel.fetchAllTaskCategories()
+        
+        // Add a small delay to ensure categories are fetched
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            print("EventTaskCardView: Available categories: \(self.categoryViewModel.categories.count)")
+            print("EventTaskCardView: Categories: \(self.categoryViewModel.categories.map { "\($0.name) (ID: \($0.id ?? "nil"))" })")
+            
+            // Then find the matching category
+            if let category = self.categoryViewModel.categories.first(where: { $0.id == self.task.taskCategoryId }) {
+                print("EventTaskCardView: Found matching category: \(category.name)")
+                self.categoryName = category.name
+                self.categoryColor = category.color ?? "#3498DB"
+            } else {
+                print("EventTaskCardView: No matching category found for ID: \(self.task.taskCategoryId)")
+                // Set default values if category not found
+                self.categoryName = "Uncategorized"
+                self.categoryColor = "#3498DB"
+            }
+        }
+    }
 }
 
