@@ -12,6 +12,10 @@ struct EventTaskCardView: View {
     var onDelete: (() -> Void)?
     var onComplete: (() -> Void)?
     var onTap: (() -> Void)?
+    
+    @StateObject private var categoryViewModel = TaskCategoryViewModel()
+    @State private var categoryName: String = ""
+    @State private var categoryColor: String = "#3498DB" // Default color
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
@@ -39,13 +43,13 @@ struct EventTaskCardView: View {
                 }
 
                 HStack(spacing: 8) {
-                    if let category = task.taskCategory {
-                        Text(category)
+                    if !categoryName.isEmpty {
+                        Text(categoryName)
                             .font(.caption)
                             .padding(.vertical, 4)
                             .padding(.horizontal, 10)
-                            .background(Color("Lavendar").opacity(0.2))
-                            .foregroundColor(Color("Lavendar"))
+                            .background(Color(hex: categoryColor).opacity(0.2))
+                            .foregroundColor(Color(hex: categoryColor))
                             .cornerRadius(12)
                     }
                     Text(statusText)
@@ -79,6 +83,9 @@ struct EventTaskCardView: View {
         .onTapGesture {
             onTap?()
         }
+        .onAppear {
+            loadCategoryDetails()
+        }
     }
 
     private var statusText: String {
@@ -105,5 +112,16 @@ struct EventTaskCardView: View {
         formatter.dateStyle = .medium
         return formatter.string(from: date)
     }
+    
+    private func loadCategoryDetails() {
+       // First fetch all categories
+       categoryViewModel.fetchAllTaskCategories()
+       
+       // Then find the matching category
+       if let category = categoryViewModel.categories.first(where: { $0.id == task.taskCategoryId }) {
+           categoryName = category.name
+           categoryColor = category.color ?? "#3498DB"
+       }
+   }
 }
 
