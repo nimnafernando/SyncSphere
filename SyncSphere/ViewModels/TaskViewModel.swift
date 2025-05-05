@@ -93,6 +93,56 @@ class TaskViewModel: ObservableObject {
             completion(.failure(error))
         }
     }
+    
+    func completeTask(_ task: SyncTask, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let taskId = task.id else {
+            completion(.failure(NSError(domain: "Task", code: 0, userInfo: [NSLocalizedDescriptionKey: "Task ID is missing."])))
+            return
+        }
+        
+        let updatedTask = SyncTask(
+            id: taskId,
+            taskName: task.taskName,
+            dueDate: task.dueDate,
+            taskCategoryId: task.taskCategoryId,
+            eventId: task.eventId,
+            isCompleted: true,
+            status: 2  // Set status to Completed
+        )
+        
+        do {
+            try db.collection(collectionName).document(taskId).setData(from: updatedTask) { error in
+                if let error = error {
+                    completion(.failure(error))
+                } else {
+                    // Update local tasks array
+                    if let index = self.tasks.firstIndex(where: { $0.id == taskId }) {
+                        self.tasks[index] = updatedTask
+                    }
+                    completion(.success(()))
+                }
+            }
+        } catch {
+            completion(.failure(error))
+        }
+    }
+        
+    func deleteTask(_ task: SyncTask, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let taskId = task.id else {
+            completion(.failure(NSError(domain: "Task", code: 0, userInfo: [NSLocalizedDescriptionKey: "Task ID is missing."])))
+            return
+        }
+        
+        db.collection(collectionName).document(taskId).delete { error in
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                // Remove from local tasks array
+                self.tasks.removeAll { $0.id == taskId }
+                completion(.success(()))
+            }
+        }
+    }
 }
 
 
