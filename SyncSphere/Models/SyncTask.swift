@@ -13,7 +13,7 @@ struct SyncTask: Codable, Identifiable, Hashable {
     @DocumentID var id: String?
     let taskName: String
     let dueDate: TimeInterval
-    let taskCategory: String?
+    let taskCategoryId: String
     let eventId: String
     let isCompleted: Bool // set this by checking status value
     let status: Int
