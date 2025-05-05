@@ -11,17 +11,18 @@ struct AddNewTaskView: View {
     let event: SyncEvent
     
     @StateObject private var taskViewModel = TaskViewModel()
+    @StateObject private var categoryViewModel = TaskCategoryViewModel()
+    @Environment(\.dismiss) private var dismiss
 
     @State private var taskName: String = ""
     @State private var dueDate: Date = Date()
-    @State private var selectedCategory: String = "Select a task category"
+    @State private var selectedCategoryId: String = ""
     @State private var selectedStatus: Int = 0 // 0: Not Started, 1: In Progress, 2: Completed
     @State private var showToast = false
     @State private var toastMessage = ""
     @State private var toastType: ToastType = .success
     @State private var showAllCategories = false
-
-    let categories = ["Select a task category", "General", "Flowers", "Food", "Decor", "Other"]
+    @State private var isLoading = false
 
     var body: some View {
         NavigationStack {
@@ -90,11 +91,12 @@ struct AddNewTaskView: View {
                             ) { EmptyView() }
                             .hidden()
                         }
-                        Picker("Select a task category", selection: $selectedCategory) {
-                            ForEach(categories, id: \.self) { cat in
-                                Text(cat).tag(cat)
-                            }
-                        }
+                        Picker("Select a task category", selection: $selectedCategoryId) {
+                           Text("Select a task category").tag("")
+                           ForEach(categoryViewModel.categories) { category in
+                               Text(category.name).tag(category.id ?? "")
+                           }
+                       }
                         .pickerStyle(.menu)
                         .padding()
                         .background(Color.white.opacity(0.7))
@@ -149,6 +151,16 @@ struct AddNewTaskView: View {
                     .padding(.bottom, 24)
                 }
                 .padding(.top, 16)
+                .onAppear {
+                    categoryViewModel.fetchAllTaskCategories()
+                }
+                .disabled(isLoading)
+                   if isLoading {
+                       ProgressView()
+                           .scaleEffect(1.5)
+                           .frame(maxWidth: .infinity, maxHeight: .infinity)
+                           .background(Color.black.opacity(0.2))
+                   }
 
                 // Toast (if you have a ToastView)
                 if showToast {
@@ -180,45 +192,47 @@ struct AddNewTaskView: View {
             showToast = true
             return
         }
-        guard selectedCategory != "Select a task category" else {
-            toastMessage = "Please select a task category"
-            toastType = .error
-            showToast = true
-            return
-        }
-
-        guard selectedCategory != "Select a task category" else {
-            toastMessage = "Please select a task category"
-            toastType = .error
-            showToast = true
-            return
-        }
+        guard !selectedCategoryId.isEmpty else {
+           toastMessage = "Please select a task category"
+           toastType = .error
+           showToast = true
+           return
+       }
+        
+        isLoading = true
         
         // Create your EventTask model and save to Firestore or your backend
         let newTask = SyncTask(
-            id: UUID().uuidString,
-            taskName: taskName,
-            dueDate: dueDate.timeIntervalSince1970,
-            taskCategory: selectedCategory,
-            eventId: event.eventId ?? "",
-            isCompleted: selectedStatus == 2,
-            status: selectedStatus
-        )
+                    id: UUID().uuidString,
+                    taskName: taskName,
+                    dueDate: dueDate.timeIntervalSince1970,
+                    taskCategoryId: selectedCategoryId,
+                    eventId: event.eventId ?? "",
+                    isCompleted: selectedStatus == 2,
+                    status: selectedStatus
+                )
+        
         
         taskViewModel.addEventTask(eventId: event.eventId ?? "", task: newTask) { result in
             DispatchQueue.main.async {
+                isLoading = false
                 switch result {
                 case .success:
                     toastMessage = "Task added successfully!"
                     toastType = .success
+                    showToast = true
+                                        
+                    // Dismiss the view after a short delay to show the success message
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        dismiss()
+                    }
                 case .failure(let error):
                     toastMessage = "Failed to add task: \(error.localizedDescription)"
                     toastType = .error
+                    showToast = true
                 }
                 showToast = true
             }
         }
-
-        // Optionally, pop the view or reset fields after a delay
     }
 }
