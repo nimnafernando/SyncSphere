@@ -352,4 +352,61 @@ class EventViewModel: ObservableObject {
         }
     }
     
+    func getEventById(eventId: String, completion: @escaping (Result<SyncEvent, Error>) -> Void) {
+        let db = Firestore.firestore()
+        db.collection("event").document(eventId).getDocument { snapshot, error in
+            if let error = error {
+                print("Error fetching event: \(error)")
+                completion(.failure(error))
+                return
+            }
+            
+            guard let data = snapshot?.data() else {
+                print("No data found for event")
+                completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data found for event"])))
+                return
+            }
+            
+            print("Raw event data:", data)
+            
+            let statusId = data["statusId"] as? Int ?? 1
+            let dueDate: TimeInterval
+            if let timestamp = data["dueDate"] as? Timestamp {
+                dueDate = TimeInterval(timestamp.seconds)
+                print("Converted dueDate timestamp:", dueDate)
+            } else if let doubleValue = data["dueDate"] as? Double {
+                dueDate = doubleValue
+                print("Using double dueDate:", dueDate)
+            } else {
+                dueDate = 0
+                print("No valid dueDate found")
+            }
+            
+            let createdAt: TimeInterval?
+            if let timestamp = data["createdAt"] as? Timestamp {
+                createdAt = TimeInterval(timestamp.seconds)
+            } else if let doubleValue = data["createdAt"] as? Double {
+                createdAt = doubleValue
+            } else {
+                createdAt = nil
+            }
+            
+            let isOutdoor = data["isOutdoor"] as? Bool ?? false
+            
+            let event = SyncEvent(
+                eventId: eventId,
+                eventName: data["eventName"] as? String ?? "Unknown Event",
+                dueDate: dueDate,
+                venue: data["venue"] as? String,
+                priority: data["priority"] as? Int,
+                isOutdoor: isOutdoor,
+                statusId: statusId,
+                createdAt: createdAt,
+                calendarEventId: data["calendarEventId"] as? String
+            )
+            
+            print("Created event with dueDate:", event.dueDate) 
+            completion(.success(event))
+        }
+    }
 }
