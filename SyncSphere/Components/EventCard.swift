@@ -21,15 +21,15 @@ struct EventCard: View {
      var body: some View {
          ZStack {
              ZStack {
-                 // Complete action (right side - appears when swiping left)
+                 // Complete action
                  Rectangle()
-                     .foregroundColor(statusId == 3 ? .blue :.green)
+                     .foregroundColor(statusId == 3 ? .blue : .green)
                      .cornerRadius(20)
                      .frame(width: UIScreen.main.bounds.width * 0.9)
                      .overlay(
                          HStack {
                              Spacer()
-                             Image(systemName: statusId == 3 ? "repeat.circle" : "checkmark.circle.fill")
+                             Image(systemName: statusId == 3 || statusId == 2 ? "repeat.circle" : "checkmark.circle.fill")
                                  .foregroundColor(.white)
                      
                          }
@@ -39,7 +39,7 @@ struct EventCard: View {
                      .padding(.bottom, 10)
                      .opacity(offset < 0 ? 1 : 0)
                  
-                 // Delete action (left side - appears when swiping right)
+                 // Delete action
                  Rectangle()
                      .foregroundColor(.red)
                      .cornerRadius(20)
@@ -59,7 +59,7 @@ struct EventCard: View {
              
              }
              
-             // Card content (original implementation)
+             // Card content 
              Rectangle()
                  .fill(Color.white)
                  .cornerRadius(20)
