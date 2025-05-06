@@ -33,154 +33,150 @@ struct EditTaskView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                GradientBackground()
+        ZStack {
+            GradientBackground()
+            
+            VStack(spacing: 24) {
+                Text("Edit Task")
+                    .font(.title)
+                    .bold()
+                    .padding(.top, 8)
                 
-                VStack(spacing: 24) {
-                    Text("Edit Task")
-                        .font(.title)
-                        .bold()
-                        .padding(.top, 8)
-                    
-                    // Task Name
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Task Name")
-                            .font(.headline)
-                        TextField("Enter task name", text: $taskName)
-                            .padding()
-                            .background(Color.white.opacity(0.7))
-                            .cornerRadius(12)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
-                    .background(Color.white.opacity(0.7))
-                    .cornerRadius(20)
-                    .padding(.horizontal)
-                    
-                    // Due Date Section
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Due Date")
-                            .font(.headline)
-                        HStack {
-                            DatePicker(
-                                "",
-                                selection: $dueDate,
-                                displayedComponents: [.date, .hourAndMinute]
-                            )
-                            .labelsHidden()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
+                // Task Name
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Task Name")
+                        .font(.headline)
+                    TextField("Enter task name", text: $taskName)
                         .padding()
                         .background(Color.white.opacity(0.7))
                         .cornerRadius(12)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
-                    .background(Color.white.opacity(0.7))
-                    .cornerRadius(20)
-                    .padding(.horizontal)
-                    
-                    // Category Section
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Task Category")
-                                .font(.headline)
-                            Spacer()
-                            Button(action: { showAllCategories = true }) {
-                                Text("View Task Category")
-                                    .font(.footnote)
-                                    .foregroundColor(Color("Lavendar"))
-                            }
-                            NavigationLink(
-                                destination: AllTaskCategoryView(),
-                                isActive: $showAllCategories
-                            ) { EmptyView() }
-                            .hidden()
-                        }
-                        Picker("Select a task category", selection: $selectedCategoryId) {
-                            Text("Select a task category").tag("")
-                            ForEach(categoryViewModel.categories) { category in
-                                Text(category.name).tag(category.id ?? "")
-                            }
-                        }
-                        .pickerStyle(.menu)
-                        .padding()
-                        .background(Color.white.opacity(0.7))
-                        .cornerRadius(12)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
-                    .background(Color.white.opacity(0.7))
-                    .cornerRadius(20)
-                    .padding(.horizontal)
-                    
-                    // Status
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Status")
-                            .font(.headline)
-                        HStack(spacing: 12) {
-                            ForEach(statusPills, id: \.value) { pill in
-                                Button(action: { selectedStatus = pill.value }) {
-                                    Text(pill.title)
-                                        .padding(.vertical, 6)
-                                        .padding(.horizontal, 14)
-                                        .background(selectedStatus == pill.value ? pill.color : Color.white.opacity(0.9))
-                                        .foregroundColor(selectedStatus == pill.value ? .white : pill.color)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 40)
-                                                .stroke(pill.color, lineWidth: 1)
-                                        )
-                                        .cornerRadius(40)
-                                }
-                            }
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
-                    .background(Color.white.opacity(0.7))
-                    .cornerRadius(20)
-                    .padding(.horizontal)
-                    
-                    Spacer()
-                    
-                    // Save Button
-                    Button(action: updateTask) {
-                        Text("Update Task")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color("Lavendar"))
-                            .cornerRadius(20)
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom, 24)
                 }
-                .padding(.top, 16)
-                .onAppear {
-                    categoryViewModel.fetchAllTaskCategories()
-                }
-                .disabled(isLoading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(Color.white.opacity(0.7))
+                .cornerRadius(20)
+                .padding(.horizontal)
                 
-                if isLoading {
-                    ProgressView()
-                        .scaleEffect(1.5)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color.black.opacity(0.2))
+                // Due Date Section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Due Date")
+                        .font(.headline)
+                    HStack {
+                        DatePicker(
+                            "",
+                            selection: $dueDate,
+                            displayedComponents: [.date, .hourAndMinute]
+                        )
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding()
+                    .background(Color.white.opacity(0.7))
+                    .cornerRadius(12)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(Color.white.opacity(0.7))
+                .cornerRadius(20)
+                .padding(.horizontal)
                 
-                if showToast {
-                    VStack {
-                        ToastView(message: toastMessage, type: toastType)
-                            .padding(.top, 20)
+                // Category Section
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Task Category")
+                            .font(.headline)
                         Spacer()
+                        Button(action: { showAllCategories = true }) {
+                            Text("View Task Category")
+                                .font(.footnote)
+                                .foregroundColor(Color("Lavendar"))
+                        }
                     }
-                    .zIndex(1)
+                    Picker("Select a task category", selection: $selectedCategoryId) {
+                        Text("Select a task category").tag("")
+                        ForEach(categoryViewModel.categories) { category in
+                            Text(category.name).tag(category.id ?? "")
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .padding()
+                    .background(Color.white.opacity(0.7))
+                    .cornerRadius(12)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(Color.white.opacity(0.7))
+                .cornerRadius(20)
+                .padding(.horizontal)
+                
+                // Status
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Status")
+                        .font(.headline)
+                    HStack(spacing: 12) {
+                        ForEach(statusPills, id: \.value) { pill in
+                            Button(action: { selectedStatus = pill.value }) {
+                                Text(pill.title)
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 14)
+                                    .background(selectedStatus == pill.value ? pill.color : Color.white.opacity(0.9))
+                                    .foregroundColor(selectedStatus == pill.value ? .white : pill.color)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 40)
+                                            .stroke(pill.color, lineWidth: 1)
+                                    )
+                                    .cornerRadius(40)
+                            }
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(Color.white.opacity(0.7))
+                .cornerRadius(20)
+                .padding(.horizontal)
+                
+                Spacer()
+                
+                // Save Button
+                Button(action: updateTask) {
+                    Text("Update Task")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color("Lavendar"))
+                        .cornerRadius(20)
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 24)
             }
-            .navigationBarTitleDisplayMode(.inline)
+            .padding(.top, 16)
+            .onAppear {
+                categoryViewModel.fetchAllTaskCategories()
+            }
+            .disabled(isLoading)
+            .navigationDestination(isPresented: $showAllCategories) {
+                AllTaskCategoryView()
+            }
+            
+            if isLoading {
+                ProgressView()
+                    .scaleEffect(1.5)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black.opacity(0.2))
+            }
+            
+            if showToast {
+                VStack {
+                    ToastView(message: toastMessage, type: toastType)
+                        .padding(.top, 20)
+                    Spacer()
+                }
+                .zIndex(1)
+            }
         }
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     private var statusPills: [(title: String, value: Int, color: Color)] {
@@ -254,4 +250,4 @@ struct EditTaskView: View {
         isCompleted: false,
         status: 0
     ))
-}
+} 
