@@ -10,6 +10,7 @@ import FirebaseCore
 
 @main
 struct SyncSphereApp: App {
+    @StateObject var profileViewModel = ProfileViewModel()
     let persistenceController = PersistenceController.shared
     init(){
         FirebaseApp.configure()
@@ -18,6 +19,7 @@ struct SyncSphereApp: App {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .environmentObject(profileViewModel)
         }
     }
 }

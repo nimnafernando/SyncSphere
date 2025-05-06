@@ -40,6 +40,8 @@ struct SignInView: View {
                 GradientBackground()
                 
                 VStack(spacing: 20) {
+                    Spacer()
+                    
                     Image("logo")
                         .resizable()
                         .frame(width: UIScreen.main.bounds.width * 0.4, height: UIScreen.main.bounds.height * 0.18)
