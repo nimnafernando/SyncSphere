@@ -15,6 +15,7 @@ struct EventDetailView: View {
     
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var tasks: [SyncTask] = [] // Add state for tasks
     
     private var priorityPills: [(title: String, value: Int, color: Color)] {
         [
@@ -161,7 +162,7 @@ struct EventDetailView: View {
                             }
                             .padding(.horizontal)
                     ) {
-                        if taskViewModel.tasks.isEmpty {
+                        if  tasks.isEmpty {
                             VStack {
                                 Text("No tasks available, but you can add tasks.")
                                     .italic()
@@ -174,14 +175,27 @@ struct EventDetailView: View {
                             .padding(.horizontal)
                         } else {
                             LazyVStack(spacing: 16) {
-                                ForEach(taskViewModel.tasks) { task in
+                                ForEach(tasks) { task in
                                     EventTaskCardView(
                                         task: task,
                                         onDelete: {
-                                            //taskViewModel.deleteTask(task)
+                                            if let index = tasks.firstIndex(where: { $0.id == task.id }) {
+                                                tasks.remove(at: index)
+                                            }
                                         },
                                         onComplete: {
-                                            //                                            taskViewModel.completeTask(task)
+                                            if let index = tasks.firstIndex(where: { $0.id == task.id }) {
+                                                let updatedTask = SyncTask(
+                                                    id: task.id,
+                                                    taskName: task.taskName,
+                                                    dueDate: task.dueDate,
+                                                    taskCategoryId: task.taskCategoryId,
+                                                    eventId: task.eventId,
+                                                    isCompleted: true,
+                                                    status: 2
+                                                )
+                                                tasks[index] = updatedTask
+                                            }
                                         },
                                         onTap: {
                                             // Handle tap (e.g., show task detail)
@@ -218,9 +232,9 @@ struct EventDetailView: View {
             DispatchQueue.main.async {
                 isLoading = false
                 switch result {
-                case .success(let tasks):
-                    print("EventDetailView: Successfully loaded \(tasks.count) tasks")
-                    taskViewModel.tasks = tasks
+                case .success(let fetchedTasks):
+                    print("EventDetailView: Successfully loaded \(fetchedTasks.count) tasks")
+                    self.tasks = fetchedTasks // Update the local state
                 case .failure(let error):
                     print("EventDetailView: Failed to load tasks: \(error.localizedDescription)")
                     errorMessage = error.localizedDescription
