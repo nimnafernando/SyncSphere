@@ -6,16 +6,21 @@
 //
 
 import SwiftUI
-import SwiftUI
+
 
 struct EventDetailView: View {
-    let event: SyncEvent
+    @StateObject private var viewModel = EventViewModel()
     @StateObject private var taskViewModel = TaskViewModel()
     @State private var showNewTask = false
     
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @State private var tasks: [SyncTask] = [] // Add state for tasks
+    @State private var tasks: [SyncTask] = []
+    @StateObject private var eventState: EventState
+    
+    init(event: SyncEvent) {
+        _eventState = StateObject(wrappedValue: EventState(event: event))
+    }
     
     private var priorityPills: [(title: String, value: Int, color: Color)] {
         [
@@ -30,22 +35,49 @@ struct EventDetailView: View {
         let date = Date(timeIntervalSince1970: timestamp)
         let formatter = DateFormatter()
         formatter.dateStyle = .long
+        formatter.timeStyle = .short
         return formatter.string(from: date)
     }
     
+    private func refreshEvent() {
+        guard let eventId = eventState.event.eventId else { return }
+        
+        isLoading = true
+        viewModel.getEventById(eventId: eventId) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let updatedEvent):
+                    print("Refreshed event dueDate:", updatedEvent.dueDate) // Debug print
+                    eventState.event = updatedEvent
+                    // Reload tasks when event is refreshed
+                    self.loadTasks()
+                case .failure(let error):
+                    print("Error refreshing event: \(error.localizedDescription)")
+                    self.errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
     
     var body: some View {
         ZStack {
             GradientBackground()
+            
+            if isLoading {
+                ProgressView("Loading...")
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .scaleEffect(1.2)
+            }
+            
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    // ... (Event title, countdown, progress bar, etc.)
                     HStack {
-                        Text(event.eventName)
+                        Text(eventState.event.eventName)
                             .font(.largeTitle)
                             .bold()
                         Spacer()
-                        NavigationLink(destination: NewEventView(existingEvent: event)) {
+                        NavigationLink(destination: NewEventView(existingEvent: eventState.event)) {
                             Image(systemName: "pencil.circle.fill")
                                 .font(.title2)
                                 .foregroundColor(Color("Lavendar"))
@@ -59,9 +91,9 @@ struct EventDetailView: View {
                         .fill(Color.white.opacity(0.7))
                         .overlay(
                             VStack {
-                                CountDown(dueDate: Date(timeIntervalSince1970: event.dueDate))
+                                CountDown(dueDate: Date(timeIntervalSince1970: eventState.event.dueDate))
                             }
-                            .padding(.vertical, 24) // Equal top and bottom padding
+                            .padding(.vertical, 24)
                             .padding(.horizontal)
                         )
                         .frame(maxWidth: .infinity, minHeight: 140)
@@ -71,7 +103,7 @@ struct EventDetailView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Event Date")
                             .font(.headline)
-                        Text(formatDate(event.dueDate))
+                        Text(formatDate(eventState.event.dueDate))
                             .font(.title2)
                             .foregroundColor(.gray)
                     }
@@ -83,11 +115,6 @@ struct EventDetailView: View {
                     
                     // Progress Bar
                     VStack(alignment: .leading, spacing: 8) {
-                        //                        Text("\(viewModel.completedTasksCount)/\(viewModel.tasks.count) Tasks Completed")
-                        //                            .font(.subheadline)
-                        //                            .bold()
-                        //                        CustomProgressBar(progress: viewModel.progress)
-                        //                            .frame(height: 16)
                         CustomProgressBar()
                             .padding(.top, 6)
                     }
@@ -98,10 +125,10 @@ struct EventDetailView: View {
                         Text("Venue")
                             .font(.headline)
                         HStack {
-                            let venue = event.venue ?? ""
+                            let venue = eventState.event.venue ?? ""
                             Text(venue.isEmpty ? "No venue specified" : venue)
                                 .foregroundColor(.primary)
-                            if event.isOutdoor {
+                            if eventState.event.isOutdoor {
                                 Text("Outdoor")
                                     .font(.caption)
                                     .padding(.vertical, 4)
@@ -118,7 +145,6 @@ struct EventDetailView: View {
                     .cornerRadius(20)
                     .padding(.horizontal)
                     
-                    
                     // Priority Section
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Event Priority")
@@ -128,8 +154,8 @@ struct EventDetailView: View {
                                 Text(pill.title)
                                     .padding(.vertical, 6)
                                     .padding(.horizontal, 14)
-                                    .background(event.priority == pill.value ? pill.color : Color.white.opacity(0.9))
-                                    .foregroundColor(event.priority == pill.value ? .white : pill.color)
+                                    .background(eventState.event.priority == pill.value ? pill.color : Color.white.opacity(0.9))
+                                    .foregroundColor(eventState.event.priority == pill.value ? .white : pill.color)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 40)
                                             .stroke(pill.color, lineWidth: 1)
@@ -143,6 +169,7 @@ struct EventDetailView: View {
                     .cornerRadius(20)
                     .padding(.horizontal)
                     
+                    // Tasks Section
                     Section(
                         header:
                             HStack {
@@ -150,7 +177,7 @@ struct EventDetailView: View {
                                     .font(.title2)
                                     .bold()
                                 Spacer()
-                                NavigationLink(destination: AddNewTaskView(event: event)) {
+                                NavigationLink(destination: AddNewTaskView(event: eventState.event)) {
                                     HStack(spacing: 4) {
                                         Image(systemName: "plus.circle.fill")
                                         Text("Add Task")
@@ -162,7 +189,7 @@ struct EventDetailView: View {
                             }
                             .padding(.horizontal)
                     ) {
-                        if  tasks.isEmpty {
+                        if tasks.isEmpty {
                             VStack {
                                 Text("No tasks available, but you can add tasks.")
                                     .italic()
@@ -207,17 +234,38 @@ struct EventDetailView: View {
                         }
                     }
                 }
-                .onAppear {
-                    loadTasks()
-                }
             }
+            .opacity(isLoading ? 0.6 : 1.0)
+            .disabled(isLoading)
+        }
+        .onAppear {
+            refreshEvent() // This will also load tasks
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            refreshEvent()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("EventUpdated"))) { _ in
+            refreshEvent()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("TaskUpdated"))) { _ in
+            loadTasks()
+        }
+        .alert(isPresented: Binding(
+            get: { self.errorMessage != nil },
+            set: { if !$0 { self.errorMessage = nil } }
+        )) {
+            Alert(
+                title: Text("Error"),
+                message: Text(errorMessage ?? "An unknown error occurred"),
+                dismissButton: .default(Text("OK"))
+            )
         }
     }
     
     private func loadTasks() {
         print("EventDetailView: Starting to load tasks")
         
-        guard let eventId = event.eventId else {
+        guard let eventId = eventState.event.eventId else {
             print("EventDetailView: Event ID is missing")
             errorMessage = "Event ID is missing"
             return
@@ -228,13 +276,13 @@ struct EventDetailView: View {
         isLoading = true
         errorMessage = nil
         
-        taskViewModel.fetchEventTasks(for: event) { result in
+        taskViewModel.fetchEventTasks(for: eventState.event) { result in
             DispatchQueue.main.async {
                 isLoading = false
                 switch result {
                 case .success(let fetchedTasks):
                     print("EventDetailView: Successfully loaded \(fetchedTasks.count) tasks")
-                    self.tasks = fetchedTasks // Update the local state
+                    self.tasks = fetchedTasks
                 case .failure(let error):
                     print("EventDetailView: Failed to load tasks: \(error.localizedDescription)")
                     errorMessage = error.localizedDescription
@@ -243,3 +291,12 @@ struct EventDetailView: View {
         }
     }
 }
+
+class EventState: ObservableObject {
+    @Published var event: SyncEvent
+    
+    init(event: SyncEvent) {
+        self.event = event
+    }
+}
+
