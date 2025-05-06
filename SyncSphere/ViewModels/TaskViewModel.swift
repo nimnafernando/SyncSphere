@@ -172,6 +172,10 @@ class TaskViewModel: ObservableObject {
                 tasks[index] = task
             }
         }
+        
+        await MainActor.run {
+            NotificationCenter.default.post(name: NSNotification.Name("TaskUpdated"), object: nil)
+        }
     }
     
     func fetchTask(byId taskId: String) async throws -> SyncTask {

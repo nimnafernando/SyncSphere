@@ -233,7 +233,11 @@ struct NewEventView: View {
                 }
                 
                 addToCalendar(SyncEvent: eventToSave, createdEventId: eventId)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                // Post notification that event was updated
+                NotificationCenter.default.post(name: NSNotification.Name("EventUpdated"), object: nil)
+                
+                // Dismiss after a short delay to show the success message
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     dismiss()
                 }
             case .failure(let error):

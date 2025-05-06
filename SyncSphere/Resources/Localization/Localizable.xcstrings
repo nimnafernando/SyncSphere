@@ -50,6 +50,9 @@
     "Enter task name" : {
 
     },
+    "Error" : {
+
+    },
     "Error: %@" : {
 
     },
@@ -106,6 +109,9 @@
     "Loading your events..." : {
 
     },
+    "Loading..." : {
+
+    },
     "Mark as Ongoing" : {
 
     },
@@ -119,6 +125,9 @@
 
     },
     "No tasks available, but you can add tasks." : {
+
+    },
+    "OK" : {
 
     },
     "Outdoor" : {
