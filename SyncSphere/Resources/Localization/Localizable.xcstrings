@@ -32,9 +32,6 @@
     "Add Task" : {
 
     },
-    "Category" : {
-
-    },
     "Category Name" : {
 
     },
@@ -45,6 +42,9 @@
 
     },
     "Edit Event" : {
+
+    },
+    "Edit Task" : {
 
     },
     "Enter task name" : {
@@ -158,6 +158,9 @@
 
     },
     "Tasks" : {
+
+    },
+    "Update Task" : {
 
     },
     "Venue" : {

@@ -9,9 +9,18 @@ import SwiftUI
 
 struct TaskDetailView: View {
     let task: SyncTask
+    @StateObject private var taskViewModel = TaskViewModel()
     @StateObject private var categoryViewModel = TaskCategoryViewModel()
-    @State private var categoryName: String = ""
-    @State private var categoryColor: String = "#3498DB"
+    @State private var currentTask: SyncTask
+    @State private var showEditTask = false
+    @State private var showToast = false
+    @State private var toastMessage = ""
+    @State private var toastType: ToastType = .success
+    
+    init(task: SyncTask) {
+        self.task = task
+        _currentTask = State(initialValue: task)
+    }
     
     var body: some View {
         ZStack {
@@ -19,18 +28,26 @@ struct TaskDetailView: View {
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    // Task Name
-                    Text(task.taskName)
-                        .font(.largeTitle)
-                        .bold()
-                        .padding(.top, 8)
-                        .padding(.horizontal)
+                    // Title and Edit Button
+                    HStack {
+                        Text(currentTask.taskName)
+                            .font(.largeTitle)
+                            .bold()
+                        Spacer()
+                        NavigationLink(destination: EditTaskView(task: currentTask)) {
+                            Image(systemName: "pencil.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(Color("Lavendar"))
+                        }
+                    }
+                    .padding(.top, 8)
+                    .padding(.horizontal)
                     
                     // Due Date Section
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Due Date")
                             .font(.headline)
-                        Text(formatDate(task.dueDate))
+                        Text(formatDate(currentTask.dueDate))
                             .font(.title2)
                             .foregroundColor(.gray)
                     }
@@ -40,14 +57,16 @@ struct TaskDetailView: View {
                     .cornerRadius(20)
                     .padding(.horizontal)
                     
-                    // Category Section
+                    // Task Category Section
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Category")
+                        Text("Task Category")
                             .font(.headline)
-                        if !categoryName.isEmpty {
-                            Text(categoryName)
-                                .font(.title2)
-                                .foregroundColor(Color(hex: categoryColor))
+                        HStack {
+                            Circle()
+                                .fill(Color(hex: categoryViewModel.categories.first(where: { $0.id == currentTask.taskCategoryId })?.color ?? "#3498DB"))
+                                .frame(width: 12, height: 12)
+                            Text(categoryViewModel.categories.first(where: { $0.id == currentTask.taskCategoryId })?.name ?? "Uncategorized")
+                                .foregroundColor(.gray)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -60,9 +79,20 @@ struct TaskDetailView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Status")
                             .font(.headline)
-                        Text(statusText)
-                            .font(.title2)
-                            .foregroundColor(statusColor)
+                        VStack(spacing: 15) {
+                            ForEach(statusPills, id: \.value) { pill in
+                                Text(pill.title)
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 14)
+                                    .background(currentTask.status == pill.value ? pill.color : Color.white.opacity(0.9))
+                                    .foregroundColor(currentTask.status == pill.value ? .white : pill.color)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 40)
+                                            .stroke(pill.color, lineWidth: 1)
+                                    )
+                                    .cornerRadius(40)
+                            }
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
@@ -70,49 +100,70 @@ struct TaskDetailView: View {
                     .cornerRadius(20)
                     .padding(.horizontal)
                 }
-                .padding(.top, 16)
+            }
+            .onAppear {
+                refreshTaskData()
+                categoryViewModel.fetchAllTaskCategories()
+            }
+            
+            if showToast {
+                VStack {
+                    ToastView(message: toastMessage, type: toastType)
+                        .padding(.top, 20)
+                    Spacer()
+                }
+                .zIndex(1)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            loadCategoryDetails()
+    }
+    
+    private func refreshTaskData() {
+        guard let taskId = currentTask.id else { return }
+        
+        Task {
+            do {
+                let updatedTask = try await taskViewModel.fetchTask(byId: taskId)
+                await MainActor.run {
+                    currentTask = updatedTask
+                }
+            } catch {
+                print("Error refreshing task data: \(error)")
+                // Optionally show an error toast
+                await MainActor.run {
+                    toastMessage = "Failed to refresh task data"
+                    toastType = .error
+                    showToast = true
+                }
+            }
         }
     }
     
-    private var statusText: String {
-        switch task.status {
-        case 0: return "Not Started"
-        case 1: return "In Progress"
-        case 2: return "Completed"
-        default: return "Unknown"
-        }
-    }
-    
-    private var statusColor: Color {
-        switch task.status {
-        case 0: return .red
-        case 1: return .orange
-        case 2: return .green
-        default: return .gray
-        }
+    private var statusPills: [(title: String, value: Int, color: Color)] {
+        [
+            ("Not Started", 0, .red),
+            ("In Progress", 1, .blue),
+            ("Completed", 2, .green)
+        ]
     }
     
     private func formatDate(_ timestamp: TimeInterval) -> String {
         let date = Date(timeIntervalSince1970: timestamp)
         let formatter = DateFormatter()
         formatter.dateStyle = .long
-        formatter.timeStyle = .short
         return formatter.string(from: date)
     }
-    
-    private func loadCategoryDetails() {
-        categoryViewModel.fetchAllTaskCategories()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            if let category = categoryViewModel.categories.first(where: { $0.id == task.taskCategoryId }) {
-                categoryName = category.name
-                categoryColor = category.color ?? "#3498DB"
-            }
-        }
-    }
 }
+
+#Preview {
+    TaskDetailView(task: SyncTask(
+        id: "1",
+        taskName: "Sample Task",
+        dueDate: Date().timeIntervalSince1970,
+        taskCategoryId: "1",
+        eventId: "1",
+        isCompleted: false,
+        status: 0
+    ))
+}
+

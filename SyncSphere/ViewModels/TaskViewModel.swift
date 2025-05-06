@@ -143,6 +143,57 @@ class TaskViewModel: ObservableObject {
             }
         }
     }
+   
+    func updateTask(_ task: SyncTask) async throws {
+        print("TaskViewModel: Starting to update task: \(task.taskName)")
+        
+        guard let taskId = task.id else {
+            print("TaskViewModel: Task ID is missing")
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Task ID is missing"])
+        }
+        
+        print("TaskViewModel: Found task ID: \(taskId)")
+        
+        let taskData: [String: Any] = [
+            "taskName": task.taskName,
+            "dueDate": task.dueDate,
+            "taskCategoryId": task.taskCategoryId,
+            "eventId": task.eventId,
+            "isCompleted": task.isCompleted,
+            "status": task.status
+        ]
+        
+        // Update Firestore document
+        try await db.collection(collectionName).document(taskId).setData(taskData, merge: true)
+                
+        // Update local tasks array on the main thread
+        if let index = tasks.firstIndex(where: { $0.id == taskId }) {
+            await MainActor.run {
+                tasks[index] = task
+            }
+        }
+    }
+    
+    func fetchTask(byId taskId: String) async throws -> SyncTask {
+        print("TaskViewModel: Fetching task with ID: \(taskId)")
+        
+        let document = try await db.collection(collectionName).document(taskId).getDocument()
+        guard let data = document.data() else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Task not found"])
+        }
+        
+        let task = SyncTask(
+            id: taskId,
+            taskName: data["taskName"] as? String ?? "",
+            dueDate: data["dueDate"] as? TimeInterval ?? 0,
+            taskCategoryId: data["taskCategoryId"] as? String ?? "",
+            eventId: data["eventId"] as? String ?? "",
+            isCompleted: data["isCompleted"] as? Bool ?? false,
+            status: data["status"] as? Int ?? 0
+        )
+        
+        return task
+    }
 }
 
 
