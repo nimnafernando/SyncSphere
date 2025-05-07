@@ -28,6 +28,7 @@ struct NotificationView: View {
                         .foregroundColor(.gray)
                         .padding(.top, 8)
                 }
+                .frame(maxWidth: .infinity, alignment: .center)
                 Spacer()
             } else if viewModel.notifications.isEmpty {
                 Spacer()
