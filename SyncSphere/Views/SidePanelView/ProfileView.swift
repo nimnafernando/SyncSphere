@@ -57,9 +57,6 @@ struct ProfileView: View {
                     
                     Spacer()
                     
-                    NavigationLink(destination: ForgotPasswordView()){
-                        Text("Forgot Password")
-                    }
                 }
                 .frame(width: UIScreen.main.bounds.width * 0.98, alignment: .leading)
                 

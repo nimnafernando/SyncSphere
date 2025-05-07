@@ -7,6 +7,19 @@
     "%@" : {
 
     },
+    "%@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%lf m/s" : {
+
+    },
     "%lld / %lld" : {
       "localizations" : {
         "en" : {
@@ -16,6 +29,15 @@
           }
         }
       }
+    },
+    "%lld hPa" : {
+
+    },
+    "%lld%%" : {
+
+    },
+    "%lld°C" : {
+
     },
     "6/10 Task Completed" : {
 
@@ -35,6 +57,9 @@
     "Add Task Category" : {
 
     },
+    "Already have an account?" : {
+
+    },
     "Category Color" : {
 
     },
@@ -42,6 +67,9 @@
 
     },
     "Category Name" : {
+
+    },
+    "Clouds" : {
 
     },
     "Color (Optional)" : {
@@ -69,6 +97,9 @@
 
     },
     "Enter category name" : {
+
+    },
+    "Enter location" : {
 
     },
     "Enter task name" : {
@@ -115,7 +146,7 @@
     "Events" : {
 
     },
-    "Forgot Password" : {
+    "Feels like %lld°C" : {
 
     },
     "Hello, World!" : {
@@ -127,10 +158,16 @@
     "Hex Color (e.g. #FF5733)" : {
 
     },
+    "Humidity" : {
+
+    },
     "Loading events..." : {
 
     },
     "Loading notifications..." : {
+
+    },
+    "Loading weather data..." : {
 
     },
     "Loading your events..." : {
@@ -169,6 +206,9 @@
     "Outdoor" : {
 
     },
+    "Pressure" : {
+
+    },
     "Profile" : {
 
     },
@@ -182,6 +222,9 @@
 
     },
     "Select a task category" : {
+
+    },
+    "Sign in" : {
 
     },
     "Sign Out" : {
@@ -220,10 +263,22 @@
     "View Task Category" : {
 
     },
+    "View Weather" : {
+
+    },
+    "Weather" : {
+
+    },
     "Weather Forcast" : {
 
     },
     "Welcome," : {
+
+    },
+    "Wind" : {
+
+    },
+    "You are only able to view weather data for the current date." : {
 
     },
     "z\nz" : {
