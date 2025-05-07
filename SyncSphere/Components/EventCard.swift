@@ -104,7 +104,6 @@ struct EventCard: View {
                                     self.offset = -UIScreen.main.bounds.width * 0.1
                                 }
                                 
-                                // Small delay before triggering action and resetting
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                     self.onComplete?()
                                     
@@ -119,11 +118,9 @@ struct EventCard: View {
                                     self.offset = UIScreen.main.bounds.width * 0.1
                                 }
                                 
-                                // Small delay before triggering action and resetting
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                     self.onDelete?()
                                     
-                                    // Reset after a slight delay
                                     withAnimation {
                                         self.offset = 0
                                     }
