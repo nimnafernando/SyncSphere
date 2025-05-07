@@ -198,6 +198,44 @@ class TaskViewModel: ObservableObject {
         
         return task
     }
+    
+    func getTaskCompletionStats(for eventId: String) async throws -> (total: Int, completed: Int) {
+        print("TaskViewModel: Getting task completion stats for event: \(eventId)")
+        
+        let snapshot = try await db.collection(collectionName)
+            .whereField("eventId", isEqualTo: eventId)
+            .getDocuments()
+        
+        let tasks = snapshot.documents.compactMap { doc -> SyncTask? in
+            let data = doc.data()
+            guard
+                let title = data["taskName"] as? String,
+                let dueDate = data["dueDate"] as? TimeInterval,
+                let eventId = data["eventId"] as? String,
+                let isCompleted = data["isCompleted"] as? Bool,
+                let status = data["status"] as? Int,
+                let taskCategoryId = data["taskCategoryId"] as? String
+            else {
+                return nil
+            }
+            
+            return SyncTask(
+                id: doc.documentID,
+                taskName: title,
+                dueDate: dueDate,
+                taskCategoryId: taskCategoryId,
+                eventId: eventId,
+                isCompleted: isCompleted,
+                status: status
+            )
+        }
+        
+        let totalTasks = tasks.count
+        let completedTasks = tasks.filter { $0.isCompleted }.count
+        
+        print("TaskViewModel: Found \(totalTasks) total tasks, \(completedTasks) completed")
+        return (totalTasks, completedTasks)
+    }
 }
 
 

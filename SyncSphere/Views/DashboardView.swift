@@ -11,6 +11,7 @@ struct DashboardView: View {
     
     @EnvironmentObject var profileViewModel: ProfileViewModel
     @StateObject private var eventViewModel = EventViewModel()
+    @StateObject private var taskViewModel = TaskViewModel()
     @State private var isSidebarVisible = false
     @State private var navigateToSignIn = false
     @State private var inProgressCount: Int = 0
@@ -24,6 +25,7 @@ struct DashboardView: View {
     @State private var hasError = false
     @State private var viewAppeared = false
     @State private var showNotifications = false
+    @State private var taskStats: (total: Int, completed: Int) = (0, 0)
     
     var body: some View {
         NavigationStack {
@@ -81,9 +83,10 @@ struct DashboardView: View {
                                             Spacer()
                                         }
                                         
-                                        CustomProgressBar()
-                                            .padding(.top, 6)
-                                    }
+                                        if let eventId = highestPriorityEvent?.eventId {
+                                            CustomProgressBar(progress: taskStats.total > 0 ? CGFloat(taskStats.completed) / CGFloat(taskStats.total) : 0)
+                                                .padding(.top, 6)
+                                        }                                    }
                                     .padding(.top, UIScreen.main.bounds.height * 0.13)
                                     .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
                                 }
@@ -249,9 +252,19 @@ struct DashboardView: View {
                 }
             }
             
-            // Load highest priority event
-            group.addTask {
-                await loadHighestPriorityEventAsync()
+        }
+        // Load highest priority event first
+        await loadHighestPriorityEventAsync()
+        
+        // Then load task stats for the highest priority event
+        if let eventId = highestPriorityEvent?.eventId {
+            do {
+                let stats = try await taskViewModel.getTaskCompletionStats(for: eventId)
+                await MainActor.run {
+                    taskStats = stats
+                }
+            } catch {
+                print("Error loading task stats: \(error)")
             }
         }
         
