@@ -23,6 +23,7 @@ struct DashboardView: View {
     @State private var isLoading = true
     @State private var hasError = false
     @State private var viewAppeared = false
+    @State private var showNotifications = false
     
     var body: some View {
         NavigationStack {
@@ -146,9 +147,7 @@ struct DashboardView: View {
                     Spacer()
                     
                     Button(action: {
-                        withAnimation(.spring()) {
-                            isSidebarVisible.toggle()
-                        }
+                        showNotifications = true
                     }) {
                         Image(systemName: "bell")
                             .font(.system(size: 22))
@@ -158,9 +157,7 @@ struct DashboardView: View {
                                 Circle()
                                     .fill(Color.Lavendar.opacity(0.3))
                             ).padding(.trailing, 16)
-                           
                     }
-                    
                 }
                 // Overlay for sidebar background
                 if isSidebarVisible {
@@ -184,6 +181,9 @@ struct DashboardView: View {
             .frame(maxWidth: .infinity)
             .navigationDestination(isPresented: $navigateToSignIn) {
                 SignInView()
+            }
+            .navigationDestination(isPresented: $showNotifications) {
+                NotificationView().environmentObject(profileViewModel)
             }
             .navigationBarBackButtonHidden(true)
         }
