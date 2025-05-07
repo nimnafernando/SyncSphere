@@ -98,7 +98,7 @@ struct EventDetailView: View {
                         }
                     }
                     .padding(.top, 8)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 18)
 
                     // Countdown Section
                     RoundedRectangle(cornerRadius: 24)
@@ -111,7 +111,7 @@ struct EventDetailView: View {
                             .padding(.horizontal)
                         )
                         .frame(maxWidth: .infinity, minHeight: 140)
-                        .padding(.horizontal)
+                        .padding(.horizontal, 18)
                     
                     // Due Date Section
                     VStack(alignment: .leading, spacing: 8) {
@@ -125,25 +125,38 @@ struct EventDetailView: View {
                     .padding()
                     .background(Color.OffWhite)
                     .cornerRadius(20)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 18)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Event Progres")
+                            .font(.headline)
+                        Spacer()
+                        CircularProgressView(
+                            current: taskStats.completed,
+                            total: taskStats.total
+                        )
+                        .frame(width: 58, height: 58)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .background(Color.OffWhite)
+                    .cornerRadius(20)
+                    .padding(.horizontal, 18)
+                    
                     
                     // Progress Bar
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            CircularProgressView(
-                                current: taskStats.completed,
-                                total: taskStats.total
-                            )
-                            .frame(width: 58, height: 58)
                             
                             CustomProgressBar(
                                 progress: taskStats.total > 0 ? CGFloat(taskStats.completed) / CGFloat(taskStats.total) : 0
                             )
                         }
                         .padding(.top, 6)
+                        
                     }
-                    .padding(.horizontal)
                     
+                                        
                     // Venue Section
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Venue")
@@ -167,7 +180,7 @@ struct EventDetailView: View {
                     .padding()
                     .background(Color.offWhite)
                     .cornerRadius(20)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 18)
                     
                     // Priority Section
                     VStack(alignment: .leading, spacing: 8) {
@@ -188,10 +201,11 @@ struct EventDetailView: View {
                             }
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
                     .background(Color.OffWhite)
                     .cornerRadius(20)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 18)
                     
                     // Tasks Section
                     Section(
@@ -232,6 +246,9 @@ struct EventDetailView: View {
                                         onDelete: {
                                             if let index = tasks.firstIndex(where: { $0.id == task.id }) {
                                                 tasks.remove(at: index)
+                                                Task {
+                                                    await loadTaskStats()
+                                                }
                                             }
                                         },
                                         onComplete: {
@@ -246,6 +263,10 @@ struct EventDetailView: View {
                                                     status: 2
                                                 )
                                                 tasks[index] = updatedTask
+                                                
+                                                Task {
+                                                    await loadTaskStats()
+                                                }
                                             }
                                         },
                                         onTap: {
@@ -259,6 +280,7 @@ struct EventDetailView: View {
                     }
                 }
             }
+            
             .opacity(isLoading ? 0.6 : 1.0)
             .disabled(isLoading)
         }
@@ -299,33 +321,24 @@ struct EventDetailView: View {
     }
     
     private func loadTasks() {
-        print("EventDetailView: Starting to load tasks")
-        
-        guard let eventId = eventState.event.eventId else {
-            print("EventDetailView: Event ID is missing")
-            errorMessage = "Event ID is missing"
-            return
-        }
-        
-        print("EventDetailView: Found event ID: \(eventId)")
-        
-        isLoading = true
-        errorMessage = nil
-        
-        taskViewModel.fetchEventTasks(for: eventState.event) { result in
-            DispatchQueue.main.async {
-                isLoading = false
+            guard let eventId = eventState.event.eventId else { return }
+            
+            taskViewModel.fetchEventTasks(for: eventState.event) { result in
                 switch result {
                 case .success(let fetchedTasks):
-                    print("EventDetailView: Successfully loaded \(fetchedTasks.count) tasks")
-                    self.tasks = fetchedTasks
+                    DispatchQueue.main.async {
+                        self.tasks = fetchedTasks
+                        // After loading tasks, update the task stats
+                        Task {
+                            await self.loadTaskStats()
+                        }
+                    }
                 case .failure(let error):
-                    print("EventDetailView: Failed to load tasks: \(error.localizedDescription)")
-                    errorMessage = error.localizedDescription
+                    print("Error loading tasks: \(error.localizedDescription)")
+                    self.errorMessage = error.localizedDescription
                 }
             }
         }
-    }
 }
 
 class EventState: ObservableObject {
