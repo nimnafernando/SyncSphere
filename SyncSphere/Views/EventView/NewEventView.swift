@@ -233,10 +233,8 @@ struct NewEventView: View {
                 }
                 
                 addToCalendar(SyncEvent: eventToSave, createdEventId: eventId)
-                // Post notification that event was updated
                 NotificationCenter.default.post(name: NSNotification.Name("EventUpdated"), object: nil)
                 
-                // Dismiss after a short delay to show the success message
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     dismiss()
                 }
@@ -249,7 +247,7 @@ struct NewEventView: View {
     }
     
     private func addToCalendar(SyncEvent: SyncEvent, createdEventId: String) {
-        // If already added, remove it first
+        // If already added, remove
         if let calendarId = SyncEvent.calendarEventId {
             eventKitManager.removeEventFromCalendar(identifier: SyncEvent.calendarEventId ?? calendarId) { result in
                 DispatchQueue.main.async {

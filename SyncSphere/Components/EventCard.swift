@@ -85,7 +85,7 @@ struct EventCard: View {
                          
                          Spacer()
                          
-                         CircularProgressView(current: 5, total: 8)
+                         //CircularProgressView(current: 5, total: 8)
                      }
                      .padding(20)
                  )
@@ -104,7 +104,6 @@ struct EventCard: View {
                                     self.offset = -UIScreen.main.bounds.width * 0.1
                                 }
                                 
-                                // Small delay before triggering action and resetting
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                     self.onComplete?()
                                     
@@ -119,11 +118,9 @@ struct EventCard: View {
                                     self.offset = UIScreen.main.bounds.width * 0.1
                                 }
                                 
-                                // Small delay before triggering action and resetting
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                                     self.onDelete?()
                                     
-                                    // Reset after a slight delay
                                     withAnimation {
                                         self.offset = 0
                                     }
@@ -143,6 +140,3 @@ struct EventCard: View {
  
 
 
-#Preview {
-    EventCard(title: "Title", date: 12.00, statusId: 1)
-}

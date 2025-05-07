@@ -41,12 +41,12 @@ struct AddNewTaskView: View {
                             .font(.headline)
                         TextField("Enter task name", text: $taskName)
                             .padding()
-                            .background(Color.white.opacity(0.7))
+                            .background(Color.OffWhite)
                             .cornerRadius(12)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
-                    .background(Color.white.opacity(0.7))
+                    .background(Color.offWhite)
                     .cornerRadius(20)
                     .padding(.horizontal)
 
@@ -64,12 +64,12 @@ struct AddNewTaskView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .padding()
-                        .background(Color.white.opacity(0.7))
+                        .background(Color.OffWhite)
                         .cornerRadius(12)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
-                    .background(Color.white.opacity(0.7))
+                    .background(Color.offWhite)
                     .cornerRadius(20)
                     .padding(.horizontal)
 
@@ -99,12 +99,12 @@ struct AddNewTaskView: View {
                        }
                         .pickerStyle(.menu)
                         .padding()
-                        .background(Color.white.opacity(0.7))
+                        .background(Color.OffWhite)
                         .cornerRadius(12)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
-                    .background(Color.white.opacity(0.7))
+                    .background(Color.OffWhite)
                     .cornerRadius(20)
                     .padding(.horizontal)
 
@@ -118,7 +118,7 @@ struct AddNewTaskView: View {
                                     Text(pill.title)
                                         .padding(.vertical, 6)
                                         .padding(.horizontal, 14)
-                                        .background(selectedStatus == pill.value ? pill.color : Color.white.opacity(0.9))
+                                        .background(selectedStatus == pill.value ? pill.color : Color.OffWhite)
                                         .foregroundColor(selectedStatus == pill.value ? .white : pill.color)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 40)
@@ -131,7 +131,7 @@ struct AddNewTaskView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
-                    .background(Color.white.opacity(0.7))
+                    .background(Color.OffWhite)
                     .cornerRadius(20)
                     .padding(.horizontal)
 

@@ -93,7 +93,7 @@ struct EventDetailView: View {
                         Spacer()
                         NavigationLink(destination: NewEventView(existingEvent: eventState.event)) {
                             Image(systemName: "pencil.circle.fill")
-                                .font(.title2)
+                                .font(.title)
                                 .foregroundColor(Color("Lavendar"))
                         }
                     }
@@ -102,7 +102,7 @@ struct EventDetailView: View {
 
                     // Countdown Section
                     RoundedRectangle(cornerRadius: 24)
-                        .fill(Color.white.opacity(0.7))
+                        .fill(Color.offWhite)
                         .overlay(
                             VStack {
                                 CountDown(dueDate: Date(timeIntervalSince1970: eventState.event.dueDate))
@@ -123,7 +123,7 @@ struct EventDetailView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
-                    .background(Color.white.opacity(0.7))
+                    .background(Color.OffWhite)
                     .cornerRadius(20)
                     .padding(.horizontal)
                     
@@ -165,7 +165,7 @@ struct EventDetailView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
-                    .background(Color.white.opacity(0.7))
+                    .background(Color.offWhite)
                     .cornerRadius(20)
                     .padding(.horizontal)
                     
@@ -178,7 +178,7 @@ struct EventDetailView: View {
                                 Text(pill.title)
                                     .padding(.vertical, 6)
                                     .padding(.horizontal, 14)
-                                    .background(eventState.event.priority == pill.value ? pill.color : Color.white.opacity(0.9))
+                                    .background(eventState.event.priority == pill.value ? pill.color : Color.OffWhite)
                                     .foregroundColor(eventState.event.priority == pill.value ? .white : pill.color)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 40)
@@ -189,7 +189,7 @@ struct EventDetailView: View {
                         }
                     }
                     .padding()
-                    .background(Color.white.opacity(0.7))
+                    .background(Color.OffWhite)
                     .cornerRadius(20)
                     .padding(.horizontal)
                     
@@ -221,7 +221,7 @@ struct EventDetailView: View {
                                     .padding()
                             }
                             .frame(maxWidth: .infinity)
-                            .background(Color.white.opacity(0.7))
+                            .background(Color.OffWhite)
                             .cornerRadius(16)
                             .padding(.horizontal)
                         } else {

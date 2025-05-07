@@ -75,12 +75,12 @@ struct AllTaskCategoryView: View {
                     Spacer()
                     Button(action: { showAddSheet = true }) {
                         Image(systemName: "plus")
-                            .font(.system(size: 28, weight: .bold))
+                            .font(.system(size: 28))
                             .foregroundColor(.white)
                             .padding(22)
                             .background(
                                 Circle()
-                                    .fill(Color(hex: "#7D5FFF"))
+                                    .fill(Color.lavendar)
                                     .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
                             )
                     }
