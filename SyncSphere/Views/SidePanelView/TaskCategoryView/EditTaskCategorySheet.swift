@@ -1,5 +1,5 @@
 //
-//  AddNewTaskCategorySheet.swift
+//  EditTaskCategorySheet.swift
 //  SyncSphere
 //
 //  Created by W.N.R.Fernando on 2025-05-06.
@@ -7,9 +7,10 @@
 
 import SwiftUI
 
-struct AddNewTaskCategorySheet: View {
-    @State private var name: String = ""
-    @State private var selectedColor: String = "#7D5FFF"
+struct EditTaskCategorySheet: View {
+    @State var name: String
+    @State var selectedColor: String
+    let category: SyncTaskCategory
     @StateObject private var viewModel = TaskCategoryViewModel()
     @Environment(\.dismiss) private var dismiss
 
@@ -20,7 +21,7 @@ struct AddNewTaskCategorySheet: View {
         VStack(spacing: 24) {
             HStack {
                 Spacer()
-                Text("Add Task Category")
+                Text("Edit Task Category")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
@@ -31,16 +32,16 @@ struct AddNewTaskCategorySheet: View {
                         .foregroundColor(.black.opacity(0.7))
                 }
             }
-            .padding(.top, 20)
+            .padding(.top, 16)
             .padding(.horizontal)
 
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Category Name")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.subheadline)
                         .foregroundColor(.gray)
                     TextField("Category Name", text: $name)
-                        .font(.subheadline)
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.black)
                         .padding(.vertical, 6)
                     Rectangle()
@@ -48,9 +49,9 @@ struct AddNewTaskCategorySheet: View {
                         .foregroundColor(Color.gray.opacity(0.2))
                 }
 
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 8) {
                     Text("Category Color")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.subheadline)
                         .foregroundColor(.gray)
                     HStack(spacing: 18) {
                         ForEach(colors, id: \.self) { color in
@@ -72,7 +73,7 @@ struct AddNewTaskCategorySheet: View {
 
             Button(action: {
                 guard !name.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-                viewModel.addTaskCategory(name: name, color: selectedColor, createdBy: "userId_123")
+                viewModel.updateTaskCategory(category: category, newName: name, newColor: selectedColor)
                 dismiss()
                 onSave?()
             }) {
@@ -93,8 +94,4 @@ struct AddNewTaskCategorySheet: View {
                 .ignoresSafeArea()
         )
     }
-}
-
-#Preview {
-    AddNewTaskCategorySheet()
-}
+} 

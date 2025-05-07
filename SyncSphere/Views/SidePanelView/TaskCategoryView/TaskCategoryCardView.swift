@@ -9,9 +9,7 @@ import SwiftUI
 
 struct TaskCategoryCardView: View {
     let category: SyncTaskCategory
-    var onEdit: (() -> Void)? = nil
-    var onDelete: (() -> Void)? = nil
-    
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
@@ -34,22 +32,14 @@ struct TaskCategoryCardView: View {
                 .fill(Color.white.opacity(0.95))
                 .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
         )
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button(action: { onEdit?() }) {
-                Image(systemName: "pencil")
-            }
-            .tint(Color.blue.opacity(0.3))
-            Button(role: .destructive, action: { onDelete?() }) {
-                Image(systemName: "trash")
-            }
-        }
     }
 
     func iconForCategory(_ name: String) -> String {
         let lower = name.lowercased()
-        if lower.contains("food") { return "takeoutbag.and.cup.and.straw" }
+        if lower.contains("food") || lower.contains("beve") || lower.contains("drink") { return "takeoutbag.and.cup.and.straw" }
         if lower.contains("flower") { return "flower" }
         if lower.contains("deco") { return "sparkles" }
+        if lower.contains("vehicle") || lower.contains("transport") || lower.contains("travel") {return "car"}
         return "tray.full"
     }
 }
