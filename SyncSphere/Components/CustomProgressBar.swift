@@ -8,12 +8,11 @@
 import SwiftUI
 
 struct CustomProgressBar: View {
-    let progress: CGFloat = 0.65
-
+    let progress: CGFloat
+    
     var body: some View {
         VStack(alignment: .leading) {
-            Text("6/10 Task Completed")
-                .padding(.leading, 20)
+            Text("\(Int(progress * 100))% Task Completed")                .padding(.leading, 20)
 
             ZStack(alignment: .leading) {
                 // Outer border with gradient
@@ -55,5 +54,5 @@ struct CustomProgressBar: View {
 }
 
 #Preview {
-    CustomProgressBar()
+    CustomProgressBar(progress: 0.65)
 }

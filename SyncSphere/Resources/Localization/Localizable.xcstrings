@@ -36,10 +36,10 @@
     "%lld%%" : {
 
     },
-    "%lld°C" : {
+    "%lld%% Task Completed" : {
 
     },
-    "6/10 Task Completed" : {
+    "%lld°C" : {
 
     },
     "Add Category" : {

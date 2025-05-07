@@ -18,6 +18,8 @@ struct EventDetailView: View {
     @State private var tasks: [SyncTask] = []
     @StateObject private var eventState: EventState
     
+    @State private var taskStats: (total: Int, completed: Int) = (0, 0)
+    
     init(event: SyncEvent) {
         _eventState = StateObject(wrappedValue: EventState(event: event))
     }
@@ -57,6 +59,18 @@ struct EventDetailView: View {
                     self.errorMessage = error.localizedDescription
                 }
             }
+        }
+    }
+    
+    private func loadTaskStats() async {
+        guard let eventId = eventState.event.eventId else { return }
+        do {
+            let stats = try await taskViewModel.getTaskCompletionStats(for: eventId)
+            await MainActor.run {
+                taskStats = stats
+            }
+        } catch {
+            print("Error loading task stats: \(error)")
         }
     }
     
@@ -115,8 +129,18 @@ struct EventDetailView: View {
                     
                     // Progress Bar
                     VStack(alignment: .leading, spacing: 8) {
-                        CustomProgressBar()
-                            .padding(.top, 6)
+                        HStack {
+                            CircularProgressView(
+                                current: taskStats.completed,
+                                total: taskStats.total
+                            )
+                            .frame(width: 58, height: 58)
+                            
+                            CustomProgressBar(
+                                progress: taskStats.total > 0 ? CGFloat(taskStats.completed) / CGFloat(taskStats.total) : 0
+                            )
+                        }
+                        .padding(.top, 6)
                     }
                     .padding(.horizontal)
                     
@@ -240,15 +264,27 @@ struct EventDetailView: View {
         }
         .onAppear {
             refreshEvent() // This will also load tasks
+            Task {
+                await loadTaskStats()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             refreshEvent()
+            Task {
+                await loadTaskStats()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("EventUpdated"))) { _ in
             refreshEvent()
+            Task {
+                await loadTaskStats()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("TaskUpdated"))) { _ in
             loadTasks()
+            Task {
+                await loadTaskStats()
+            }
         }
         .alert(isPresented: Binding(
             get: { self.errorMessage != nil },
