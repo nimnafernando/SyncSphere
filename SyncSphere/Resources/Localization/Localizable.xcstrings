@@ -120,6 +120,9 @@
     "Event Priority" : {
 
     },
+    "Event Progres" : {
+
+    },
     "event_task_categories_header_text" : {
       "extractionState" : "manual",
       "localizations" : {
