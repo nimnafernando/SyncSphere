@@ -85,7 +85,7 @@ struct EventCard: View {
                          
                          Spacer()
                          
-                         CircularProgressView(current: 5, total: 8)
+                         //CircularProgressView(current: 5, total: 8)
                      }
                      .padding(20)
                  )
@@ -140,6 +140,3 @@ struct EventCard: View {
  
 
 
-#Preview {
-    EventCard(title: "Title", date: 12.00, statusId: 1)
-}
