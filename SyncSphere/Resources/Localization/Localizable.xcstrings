@@ -130,6 +130,9 @@
     "Loading events..." : {
 
     },
+    "Loading notifications..." : {
+
+    },
     "Loading your events..." : {
 
     },
@@ -151,7 +154,13 @@
     "No events found" : {
 
     },
+    "No Notifications Here." : {
+
+    },
     "No tasks available, but you can add tasks." : {
+
+    },
+    "Notifications" : {
 
     },
     "OK" : {
@@ -199,6 +208,9 @@
     "Tasks" : {
 
     },
+    "There are no notifications to display at the moment. Please check back later." : {
+
+    },
     "Update Task" : {
 
     },
@@ -212,6 +224,9 @@
 
     },
     "Welcome," : {
+
+    },
+    "z\nz" : {
 
     }
   },
