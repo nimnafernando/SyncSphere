@@ -24,6 +24,7 @@ struct RoundedCorner: Shape {
 struct AllTaskCategoryView: View {
     @StateObject var viewModel = TaskCategoryViewModel()
     @State private var showAddSheet = false
+    @State private var editingCategory: SyncTaskCategory? = nil
     
     var body: some View {
         ZStack {
@@ -53,12 +54,17 @@ struct AllTaskCategoryView: View {
                             ForEach(viewModel.categories) { category in
                                 TaskCategoryCardView(category: category)
                                     .padding(.horizontal, 8)
+                                    .onTapGesture {
+                                        editingCategory = category
+                                    }
                             }
                         }
                         .padding(.top, 20)
                     }
                 }
             }
+            .background(Color.clear)
+            .scrollContentBackground(.hidden)
             .onAppear {
                 viewModel.fetchAllTaskCategories()
             }
@@ -86,6 +92,23 @@ struct AllTaskCategoryView: View {
         .sheet(isPresented: $showAddSheet) {
             AddNewTaskCategorySheet {
                 showAddSheet = false
+                viewModel.fetchAllTaskCategories()
+            }
+            .presentationDetents([.height(350)])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(item: $editingCategory) { category in
+            let palette = ["#7D5FFF", "#3ED598", "#5CE1E6", "#FFE066", "#F7C8E0", "#FF6B6B"]
+            let initialColor = category.color
+                .flatMap { color in
+                    palette.first { $0.caseInsensitiveCompare(color.trimmingCharacters(in: .whitespacesAndNewlines)) == .orderedSame }
+                } ?? palette[0]
+            EditTaskCategorySheet(
+                name: category.name,
+                selectedColor: initialColor,
+                category: category
+            ) {
+                editingCategory = nil
                 viewModel.fetchAllTaskCategories()
             }
             .presentationDetents([.height(350)])

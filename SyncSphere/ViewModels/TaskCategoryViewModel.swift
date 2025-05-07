@@ -59,7 +59,6 @@ class TaskCategoryViewModel: ObservableObject {
                                                createdBy: userId)
         
         
-        
         do {
             _ = try db.collection(collectionName).addDocument(from: newTaskCategory) {
                 error in
@@ -75,6 +74,30 @@ class TaskCategoryViewModel: ObservableObject {
         
         
     }
-
     
+    func updateTaskCategory(category: SyncTaskCategory, newName: String, newColor: String?) {
+        guard let id = category.id else { return }
+        let docRef = db.collection(collectionName).document(id)
+        docRef.updateData([
+            "name": newName,
+            "color": newColor ?? ""
+        ]) { error in
+            if let error = error {
+                print("Error updating category: \(error)")
+            } else {
+                print("Category updated successfully.")
+            }
+        }
+    }
+    
+    func deleteTaskCategory(category: SyncTaskCategory) {
+        guard let id = category.id else { return }
+        db.collection(collectionName).document(id).delete { error in
+            if let error = error {
+                print("Error deleting category: \(error)")
+            } else {
+                print("Category deleted successfully.")
+            }
+        }
+    }
 }
