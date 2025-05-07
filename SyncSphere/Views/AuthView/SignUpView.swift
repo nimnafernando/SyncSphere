@@ -24,6 +24,13 @@ struct SignUpView: View {
                     
                     Spacer()
                     
+                    Image("logo")
+                        .resizable()
+                        .frame(width: UIScreen.main.bounds.width * 0.4, height: UIScreen.main.bounds.height * 0.18)
+                        .padding(.top, 30)
+                    
+                    Spacer()
+                    
                     Text("Sign Up")
                         .font(.title)
                         .fontWeight(.bold)
@@ -56,9 +63,9 @@ struct SignUpView: View {
                     }
                     
                     HStack{
-                        Text("New to SyncSphere?")
+                        Text("Already have an account?")
                         NavigationLink(destination: SignInView()) {
-                            Text("Sign up")
+                            Text("Sign in")
                         }
                     }.font(.footnote)
                     

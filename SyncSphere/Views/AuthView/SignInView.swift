@@ -12,6 +12,8 @@ import AuthenticationServices
 struct SignInView: View {
     @StateObject private var signInViewModel = SignInViewModel()
     @EnvironmentObject var mainViewModel: MainViewModel
+    @EnvironmentObject private var profileViewModel: ProfileViewModel
+
     @State private var navigateToDashboard = false
     @State private var showToast = false
     @State private var toastMessage = ""
@@ -57,7 +59,7 @@ struct SignInView: View {
                     AuthButton(label:"Sign in", width: 0.9) {
                         signInViewModel.signIn { success in
                             if success, let userId = Auth.auth().currentUser?.uid {
-                            
+                                profileViewModel.fetchUser()
                                 toastMessage = "Sign in successful!"
                                 toastType = .success
                                 showToast = true
@@ -95,5 +97,13 @@ struct SignInView: View {
 }
 
 #Preview {
-    SignInView()
+    let mockViewModel = ProfileViewModel()
+        mockViewModel.user = SyncUser(
+            id: "123",
+            username: "Jane Doe",
+            email: "jane@example.com",
+            createdAt: Date().timeIntervalSince1970
+        )
+    return SignInView()
+            .environmentObject(mockViewModel)
 }

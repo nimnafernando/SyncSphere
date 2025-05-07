@@ -149,8 +149,8 @@ struct CardView: View {
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
-                    .frame(width: .infinity, alignment: .center)
-                
+                    .frame(maxWidth: .infinity, alignment: .center)
+
                 Text(card.content)
                     .font(.body)
                     .foregroundColor(.black)
