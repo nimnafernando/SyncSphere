@@ -130,7 +130,7 @@ struct AllEventsView: View {
                                     }
                                 }
                                 .padding(.vertical, 12)
-                                .id(refreshID) // Force view to refresh when the ID changes
+                                .id(refreshID) 
                             }
                         }
                     }
@@ -292,7 +292,6 @@ struct AllEventsView: View {
             // Create a local copy to be removed
             var eventToRemove = event
             
-            // Optimistically remove from local list
             if let index = self.events.firstIndex(where: { $0.id == event.id }) {
                 self.events.remove(at: index)
                 forceRefreshView()
@@ -320,12 +319,12 @@ struct AllEventsView: View {
             var updatedEvent = event
             updatedEvent.statusId = 3
             
-            // First remove the event from the local list
+            // remove the event from the local list
             if let index = self.events.firstIndex(where: { $0.id == event.id }) {
                 self.events.remove(at: index)
             }
             
-            // Then add the updated event
+            // updated event
             self.events.append(updatedEvent)
             forceRefreshView()
             
@@ -336,7 +335,6 @@ struct AllEventsView: View {
                         showToast = true
                         toastType = .success
                         toastMessage = "Event Moved to cancelled"
-                        // No need for full refresh as we've already updated UI
                     case .failure(let error):
                         // Restore original event on failure
                         if let index = self.events.firstIndex(where: { $0.id == updatedEvent.id }) {
@@ -360,7 +358,7 @@ struct AllEventsView: View {
                     switch result {
                     case .success:
                         print("Removed from eventkit")
-                    case .failure(let error):
+                    case .failure(_):
                         print("Failed to remove from eventkit")
                     }
                 }
@@ -368,7 +366,7 @@ struct AllEventsView: View {
         }
     }
     
-    // Force the view to refresh by generating a new UUID
+    // Force the view to refresh
     private func forceRefreshView() {
         DispatchQueue.main.async {
             self.refreshID = UUID()
