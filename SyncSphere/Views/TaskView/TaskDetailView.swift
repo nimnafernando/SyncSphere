@@ -36,7 +36,7 @@ struct TaskDetailView: View {
                         Spacer()
                         NavigationLink(destination: EditTaskView(task: currentTask)) {
                             Image(systemName: "pencil.circle.fill")
-                                .font(.title2)
+                                .font(.title)
                                 .foregroundColor(Color("Lavendar"))
                         }
                     }
@@ -53,7 +53,7 @@ struct TaskDetailView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
-                    .background(Color.white.opacity(0.7))
+                    .background(Color.OffWhite)
                     .cornerRadius(20)
                     .padding(.horizontal)
                     
@@ -71,7 +71,7 @@ struct TaskDetailView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
-                    .background(Color.white.opacity(0.7))
+                    .background(Color.OffWhite)
                     .cornerRadius(20)
                     .padding(.horizontal)
                     
@@ -79,24 +79,24 @@ struct TaskDetailView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Status")
                             .font(.headline)
-                        VStack(spacing: 15) {
+                        HStack(spacing: 15) {
                             ForEach(statusPills, id: \.value) { pill in
                                 Text(pill.title)
                                     .padding(.vertical, 6)
                                     .padding(.horizontal, 14)
-                                    .background(currentTask.status == pill.value ? pill.color : Color.white.opacity(0.9))
+                                    .background(currentTask.status == pill.value ? pill.color : Color.OffWhite)
                                     .foregroundColor(currentTask.status == pill.value ? .white : pill.color)
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 40)
+                                        RoundedRectangle(cornerRadius: 20)
                                             .stroke(pill.color, lineWidth: 1)
                                     )
-                                    .cornerRadius(40)
+                                    .cornerRadius(20)
                             }
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
-                    .background(Color.white.opacity(0.7))
+                    .background(Color.OffWhite)
                     .cornerRadius(20)
                     .padding(.horizontal)
                 }
